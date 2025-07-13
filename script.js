@@ -340,10 +340,18 @@ async function handleDownload() {
     showLoadingModal();
     
     try {
-        // Essayer d'abord avec l'API externe
+        // Étape 1: Obtenir les informations de la vidéo
+        updateLoadingMessage('Récupération des informations de la vidéo...');
+        const videoInfo = await getVideoInfo(url, selectedPlatform);
+        
+        // Afficher les informations de la vidéo
+        displayVideoInfo(videoInfo);
+        
+        // Étape 2: Télécharger la vidéo
+        updateLoadingMessage('Téléchargement en cours...');
         const backendResult = await downloadWithBackend(url, selectedPlatform, quality);
         
-        // Ajouter à l'historique
+        // Ajouter à l'historique avec les informations complètes
         addToHistory(url, selectedPlatform, quality, backendResult);
         
         // Réinitialiser le formulaire
@@ -354,33 +362,28 @@ async function handleDownload() {
         
         // Afficher un message de succès avec lien de téléchargement
         if (backendResult && backendResult.downloadUrl) {
-            showSuccessWithDownload('Vidéo prête à télécharger !', backendResult.downloadUrl, backendResult.filename);
+            showSuccessWithDownload(
+                `${backendResult.title} est prêt à télécharger !`, 
+                backendResult.downloadUrl, 
+                backendResult.filename
+            );
         } else {
             showSuccess('Vidéo téléchargée avec succès !');
         }
         
     } catch (error) {
-        console.log('API externe non disponible, utilisation des alternatives');
+        console.error('Erreur lors du téléchargement:', error);
+        closeLoadingModal();
         
-        try {
-            // Essayer avec des services alternatifs
-            await tryAlternativeServices(url, selectedPlatform, quality);
-            
-            // Ajouter à l'historique
-            addToHistory(url, selectedPlatform, quality);
-            
-            // Réinitialiser le formulaire
-            videoUrlInput.value = '';
-            
-            // Fermer le modal de chargement
-            closeLoadingModal();
-            
-            // Afficher un message de succès
-            showSuccess('Vidéo téléchargée avec succès ! (Service alternatif)');
-            
-        } catch (altError) {
-            closeLoadingModal();
-            showErrorWithAlternatives(altError.message, url, selectedPlatform);
+        // Afficher une erreur spécifique selon le type d'erreur
+        if (error.message.includes('Sign in to confirm')) {
+            showError('Cette vidéo nécessite une authentification. Essayez avec une vidéo publique.');
+        } else if (error.message.includes('404')) {
+            showError('Vidéo non trouvée. Vérifiez que l\'URL est correcte et que la vidéo existe.');
+        } else if (error.message.includes('private')) {
+            showError('Cette vidéo est privée et ne peut pas être téléchargée.');
+        } else {
+            showError(`Erreur de téléchargement: ${error.message}`);
         }
     }
 }
@@ -575,51 +578,114 @@ function closeModal(modal) {
 
 async function downloadWithBackend(url, platform, quality) {
     try {
-        // Utiliser une API de téléchargement externe
-        const apiUrl = 'https://api.vevioz.com/api/button/mp4/';
+        // Étape 1: Obtenir les informations de la vidéo
+        const infoResponse = await fetch('/api/video-info', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: url,
+                platform: platform
+            })
+        });
         
-        // Construire l'URL de l'API selon la plateforme
-        let downloadUrl;
-        switch (platform) {
-            case 'youtube':
-                downloadUrl = `${apiUrl}${encodeURIComponent(url)}`;
-                break;
-            case 'instagram':
-                downloadUrl = `https://api.vevioz.com/api/button/instagram/${encodeURIComponent(url)}`;
-                break;
-            case 'tiktok':
-                downloadUrl = `https://api.vevioz.com/api/button/tiktok/${encodeURIComponent(url)}`;
-                break;
-            case 'facebook':
-                downloadUrl = `https://api.vevioz.com/api/button/facebook/${encodeURIComponent(url)}`;
-                break;
-            case 'twitter':
-                downloadUrl = `https://api.vevioz.com/api/button/twitter/${encodeURIComponent(url)}`;
-                break;
-            default:
-                throw new Error('Plateforme non supportée');
+        if (!infoResponse.ok) {
+            const errorData = await infoResponse.json();
+            throw new Error(errorData.error || 'Impossible d\'obtenir les informations de la vidéo');
         }
         
-        // Créer un lien de téléchargement direct
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `video_${platform}_${Date.now()}.mp4`;
-        link.target = '_blank';
+        const infoData = await infoResponse.json();
+        const videoInfo = infoData.data;
         
-        // Déclencher le téléchargement
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Étape 2: Déclencher le téléchargement
+        const downloadResponse = await fetch('/api/download', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: url,
+                platform: platform,
+                quality: quality
+            })
+        });
+        
+        if (!downloadResponse.ok) {
+            const errorData = await downloadResponse.json();
+            throw new Error(errorData.error || 'Échec du téléchargement');
+        }
+        
+        const downloadData = await downloadResponse.json();
+        const downloadResult = downloadData.data;
         
         return {
-            downloadUrl: downloadUrl,
-            filename: `video_${platform}_${Date.now()}.mp4`,
-            success: true
+            downloadUrl: downloadResult.downloadUrl,
+            filename: downloadResult.filename,
+            size: downloadResult.size,
+            title: videoInfo.title,
+            success: true,
+            message: downloadResult.message
         };
         
     } catch (error) {
-        console.error('Erreur API externe:', error);
-        throw new Error('Impossible de télécharger la vidéo. Essayez une autre URL.');
+        console.error('Erreur téléchargement yt-dlp:', error);
+        throw new Error(`Impossible de télécharger la vidéo: ${error.message}`);
+    }
+}
+
+// Nouvelle fonction pour obtenir les informations vidéo
+async function getVideoInfo(url, platform) {
+    try {
+        const response = await fetch('/api/video-info', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: url,
+                platform: platform
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Impossible d\'obtenir les informations');
+        }
+        
+        const data = await response.json();
+        return data.data;
+        
+    } catch (error) {
+        console.error('Erreur lors de l\'obtention des informations:', error);
+        throw error;
+    }
+}
+
+// Nouvelle fonction pour obtenir les formats disponibles
+async function getVideoFormats(url) {
+    try {
+        const response = await fetch('/api/formats', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: url
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Impossible d\'obtenir les formats');
+        }
+        
+        const data = await response.json();
+        return data.data;
+        
+    } catch (error) {
+        console.error('Erreur lors de l\'obtention des formats:', error);
+        throw error;
     }
 }
 
@@ -872,6 +938,74 @@ function extractVideoId(url, platform) {
         }
     } catch (error) {
         return 'unknown';
+    }
+}
+
+// Fonction pour mettre à jour le message du modal de chargement
+function updateLoadingMessage(message) {
+    const loadingText = document.querySelector('#loadingModal .loading-text');
+    if (loadingText) {
+        loadingText.textContent = message;
+    }
+}
+
+// Fonction pour afficher les informations de la vidéo
+function displayVideoInfo(videoInfo) {
+    const existingInfo = document.querySelector('.video-info-display');
+    if (existingInfo) {
+        existingInfo.remove();
+    }
+    
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'video-info-display';
+    infoDiv.style.cssText = `
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 10px 0;
+        max-width: 100%;
+    `;
+    
+    infoDiv.innerHTML = `
+        <h3 style="margin: 0 0 10px 0; color: #333; font-size: 16px;">
+            ${videoInfo.title || 'Titre non disponible'}
+        </h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; font-size: 14px; color: #666;">
+            <span><strong>Durée:</strong> ${formatDuration(videoInfo.duration)}</span>
+            <span><strong>Auteur:</strong> ${videoInfo.uploader || 'Inconnu'}</span>
+            ${videoInfo.view_count ? `<span><strong>Vues:</strong> ${formatNumber(videoInfo.view_count)}</span>` : ''}
+        </div>
+        ${videoInfo.thumbnail ? `<img src="${videoInfo.thumbnail}" alt="Miniature" style="width: 100%; max-width: 200px; border-radius: 5px; margin-top: 10px;">` : ''}
+    `;
+    
+    const downloadBtn = document.getElementById('downloadBtn');
+    downloadBtn.parentNode.insertBefore(infoDiv, downloadBtn);
+}
+
+// Fonction pour formater la durée
+function formatDuration(seconds) {
+    if (!seconds || seconds === 0) return 'Inconnue';
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+        return `${hours}h ${minutes}m ${remainingSeconds}s`;
+    } else {
+        return `${minutes}m ${remainingSeconds}s`;
+    }
+}
+
+// Fonction pour formater les nombres
+function formatNumber(num) {
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'K';
+    } else {
+        return num.toString();
     }
 }
 

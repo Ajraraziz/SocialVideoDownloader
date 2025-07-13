@@ -4,7 +4,10 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const path = require('path');
 const fs = require('fs-extra');
+const { exec, spawn } = require('child_process');
+const { promisify } = require('util');
 
+const execAsync = promisify(exec);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -33,7 +36,7 @@ app.post('/api/video-info', async (req, res) => {
             return res.status(400).json({ error: 'URL requise' });
         }
         
-        // Simulation d'extraction d'informations
+        // Extraction réelle des informations avec yt-dlp
         const videoInfo = await extractVideoInfo(url, platform);
         
         res.json({
@@ -44,7 +47,8 @@ app.post('/api/video-info', async (req, res) => {
     } catch (error) {
         console.error('Erreur lors de l\'extraction des informations:', error);
         res.status(500).json({
-            error: 'Erreur lors de l\'extraction des informations de la vidéo'
+            error: 'Erreur lors de l\'extraction des informations de la vidéo',
+            details: error.message
         });
     }
 });
@@ -58,8 +62,8 @@ app.post('/api/download', async (req, res) => {
             return res.status(400).json({ error: 'URL requise' });
         }
         
-        // Simulation de téléchargement
-        const downloadResult = await simulateDownload(url, platform, quality);
+        // Téléchargement réel avec yt-dlp
+        const downloadResult = await downloadVideo(url, platform, quality);
         
         res.json({
             success: true,
@@ -69,7 +73,33 @@ app.post('/api/download', async (req, res) => {
     } catch (error) {
         console.error('Erreur lors du téléchargement:', error);
         res.status(500).json({
-            error: 'Erreur lors du téléchargement de la vidéo'
+            error: 'Erreur lors du téléchargement de la vidéo',
+            details: error.message
+        });
+    }
+});
+
+// API pour obtenir la liste des formats disponibles
+app.post('/api/formats', async (req, res) => {
+    try {
+        const { url } = req.body;
+        
+        if (!url) {
+            return res.status(400).json({ error: 'URL requise' });
+        }
+        
+        const formats = await getVideoFormats(url);
+        
+        res.json({
+            success: true,
+            data: formats
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de l\'obtention des formats:', error);
+        res.status(500).json({
+            error: 'Erreur lors de l\'obtention des formats',
+            details: error.message
         });
     }
 });
@@ -108,78 +138,138 @@ app.post('/api/history', (req, res) => {
     }
 });
 
-// Fonction pour extraire les informations de la vidéo
-async function extractVideoInfo(url, platform) {
-    // Simulation d'extraction d'informations
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const videoId = extractVideoId(url, platform);
-            
-            resolve({
-                id: videoId,
-                title: `Vidéo ${platform} - ${videoId}`,
-                duration: Math.floor(Math.random() * 600) + 60, // 1-10 minutes
-                thumbnail: `https://via.placeholder.com/320x180/667eea/ffffff?text=${platform}`,
-                qualities: ['best', '720p', '480p', '360p', 'audio'],
-                platform: platform,
-                url: url
-            });
-        }, 1000);
-    });
-}
-
-// Fonction pour simuler le téléchargement
-async function simulateDownload(url, platform, quality) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            // Simuler une erreur aléatoire (5% de chance)
-            if (Math.random() < 0.05) {
-                reject(new Error('Erreur de téléchargement. Veuillez réessayer.'));
-                return;
-            }
-            
-            const videoId = extractVideoId(url, platform);
-            const filename = `${platform}_${videoId}_${quality}_${Date.now()}.mp4`;
-            const filePath = path.join(downloadsDir, filename);
-            
-            // Créer un fichier factice
-            fs.writeFileSync(filePath, `Simulated video file for ${url}`);
-            
-            resolve({
-                filename: filename,
-                filePath: filePath,
-                size: Math.floor(Math.random() * 100000000) + 1000000, // 1-100 MB
-                quality: quality,
-                platform: platform,
-                url: url,
-                downloadUrl: `/downloads/${filename}`
-            });
-        }, 2000 + Math.random() * 3000); // 2-5 secondes
-    });
-}
-
-// Fonction pour extraire l'ID de la vidéo
-function extractVideoId(url, platform) {
-    const urlObj = new URL(url);
+// API pour servir les fichiers téléchargés
+app.get('/downloads/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filepath = path.join(downloadsDir, filename);
     
-    switch (platform) {
-        case 'youtube':
-            return urlObj.searchParams.get('v') || urlObj.pathname.slice(1);
-        case 'instagram':
-            return urlObj.pathname.split('/p/')[1] || 'unknown';
-        case 'tiktok':
-            return urlObj.pathname.split('/video/')[1] || 'unknown';
-        case 'facebook':
-            return urlObj.searchParams.get('v') || 'unknown';
-        case 'twitter':
-            return urlObj.pathname.split('/status/')[1] || 'unknown';
-        default:
-            return 'unknown';
+    if (fs.existsSync(filepath)) {
+        res.download(filepath);
+    } else {
+        res.status(404).json({ error: 'Fichier non trouvé' });
+    }
+});
+
+// Fonction pour extraire les informations de la vidéo avec yt-dlp
+async function extractVideoInfo(url, platform) {
+    try {
+        const command = `yt-dlp --dump-json --no-download "${url}"`;
+        const { stdout, stderr } = await execAsync(command);
+        
+        if (stderr && stderr.includes('ERROR')) {
+            throw new Error(stderr);
+        }
+        
+        const videoData = JSON.parse(stdout);
+        
+        return {
+            title: videoData.title || 'Titre non disponible',
+            duration: videoData.duration || 0,
+            thumbnail: videoData.thumbnail || '',
+            uploader: videoData.uploader || 'Inconnu',
+            view_count: videoData.view_count || 0,
+            description: videoData.description || '',
+            upload_date: videoData.upload_date || '',
+            filesize: videoData.filesize_approx || 0,
+            formats: videoData.formats ? videoData.formats.length : 0
+        };
+        
+    } catch (error) {
+        console.error('Erreur yt-dlp:', error);
+        throw new Error(`Impossible d'extraire les informations: ${error.message}`);
     }
 }
 
-// Route pour servir les fichiers téléchargés
-app.use('/downloads', express.static(downloadsDir));
+// Fonction pour obtenir les formats disponibles
+async function getVideoFormats(url) {
+    try {
+        const command = `yt-dlp --list-formats --dump-json "${url}"`;
+        const { stdout, stderr } = await execAsync(command);
+        
+        if (stderr && stderr.includes('ERROR')) {
+            throw new Error(stderr);
+        }
+        
+        const lines = stdout.split('\n').filter(line => line.trim());
+        const formats = [];
+        
+        for (const line of lines) {
+            try {
+                const data = JSON.parse(line);
+                if (data.format_id) {
+                    formats.push({
+                        format_id: data.format_id,
+                        ext: data.ext,
+                        quality: data.quality || data.height || 'unknown',
+                        filesize: data.filesize || data.filesize_approx || 0,
+                        vcodec: data.vcodec || 'unknown',
+                        acodec: data.acodec || 'unknown',
+                        resolution: data.resolution || `${data.width}x${data.height}` || 'unknown'
+                    });
+                }
+            } catch (e) {
+                // Ignorer les lignes qui ne sont pas du JSON
+            }
+        }
+        
+        return formats;
+        
+    } catch (error) {
+        console.error('Erreur lors de l\'obtention des formats:', error);
+        throw new Error(`Impossible d'obtenir les formats: ${error.message}`);
+    }
+}
+
+// Fonction pour télécharger la vidéo avec yt-dlp
+async function downloadVideo(url, platform, quality = 'best') {
+    try {
+        const timestamp = Date.now();
+        const outputTemplate = path.join(downloadsDir, `%(title)s_${timestamp}.%(ext)s`);
+        
+        // Déterminer le format à télécharger
+        let formatSelector = 'best';
+        if (quality === 'audio') {
+            formatSelector = 'bestaudio/best';
+        } else if (quality === 'low') {
+            formatSelector = 'worst';
+        } else if (quality === 'medium') {
+            formatSelector = 'best[height<=720]';
+        } else if (quality === 'high') {
+            formatSelector = 'best[height<=1080]';
+        }
+        
+        const command = `yt-dlp -f "${formatSelector}" -o "${outputTemplate}" "${url}"`;
+        console.log('Commande yt-dlp:', command);
+        
+        const { stdout, stderr } = await execAsync(command, { timeout: 300000 }); // 5 minutes timeout
+        
+        if (stderr && stderr.includes('ERROR')) {
+            throw new Error(stderr);
+        }
+        
+        // Trouver le fichier téléchargé
+        const files = fs.readdirSync(downloadsDir);
+        const downloadedFile = files.find(file => file.includes(timestamp.toString()));
+        
+        if (!downloadedFile) {
+            throw new Error('Fichier téléchargé non trouvé');
+        }
+        
+        const filepath = path.join(downloadsDir, downloadedFile);
+        const stats = fs.statSync(filepath);
+        
+        return {
+            filename: downloadedFile,
+            size: stats.size,
+            downloadUrl: `/downloads/${downloadedFile}`,
+            message: 'Téléchargement terminé avec succès'
+        };
+        
+    } catch (error) {
+        console.error('Erreur lors du téléchargement:', error);
+        throw new Error(`Échec du téléchargement: ${error.message}`);
+    }
+}
 
 // Gestion des erreurs 404
 app.use((req, res) => {
