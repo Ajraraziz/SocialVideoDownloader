@@ -736,7 +736,16 @@ function showSuccess(message) {
 }
 
 function showSuccessWithDownload(message, downloadUrl, filename) {
-    // Créer une notification de succès avec lien de téléchargement
+    // Déclencher automatiquement le téléchargement
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Créer une notification de succès
     const notification = document.createElement('div');
     notification.className = 'notification download-notification';
     notification.style.cssText = `
@@ -766,25 +775,18 @@ function showSuccessWithDownload(message, downloadUrl, filename) {
         `;
     }
     
-    const downloadButtonStyle = isMobile ? 
-        `display: block; background: white; color: #4CAF50; 
-         padding: 10px 15px; border-radius: 6px; text-decoration: none; 
-         font-weight: 600; margin-top: 12px; text-align: center; font-size: 14px;` :
-        `display: inline-block; background: white; color: #4CAF50; 
-         padding: 8px 15px; border-radius: 5px; text-decoration: none; 
-         font-weight: 600; margin-top: 10px;`;
-    
     notification.innerHTML = `
-        <div style="margin-bottom: 10px;">${message}</div>
-        <a href="${downloadUrl}" download="${filename}" 
-           style="${downloadButtonStyle}">
-            <i class="fas fa-download"></i> Télécharger le fichier
-        </a>
+        <div style="margin-bottom: 10px;">
+            <i class="fas fa-check-circle"></i> ${message}
+        </div>
+        <div style="font-size: 0.9em; opacity: 0.9;">
+            Le téléchargement a commencé automatiquement
+        </div>
     `;
     
     document.body.appendChild(notification);
     
-    // Supprimer après 10 secondes
+    // Supprimer après 5 secondes
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => {
@@ -792,7 +794,7 @@ function showSuccessWithDownload(message, downloadUrl, filename) {
                 document.body.removeChild(notification);
             }
         }, 300);
-    }, 10000);
+    }, 5000);
 }
 
 async function tryAlternativeServices(url, platform, quality) {
