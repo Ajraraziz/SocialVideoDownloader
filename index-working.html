@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Téléchargeur de Vidéos - Version Fonctionnelle</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .platform-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .platform-btn {
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .platform-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .platform-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .download-form {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .download-options {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .download-options.show {
+            display: block;
+        }
+
+        .download-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .download-option:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .download-option-info {
+            flex: 1;
+        }
+
+        .download-option-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .download-option-desc {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .download-option-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .download-option-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1001;
+            max-width: 300px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success {
+            background: #4CAF50;
+        }
+
+        .notification.error {
+            background: #f44336;
+        }
+
+        .notification.info {
+            background: #2196F3;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        .info-section {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .info-section h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+
+        .info-section p {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .platform-selector {
+                gap: 10px;
+            }
+
+            .platform-btn {
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+
+            .notification {
+                left: 10px;
+                right: 10px;
+                max-width: none;
+            }
+
+            .download-option {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .download-option-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-download"></i> Video Downloader</h1>
+            <p>Téléchargez vos vidéos préférées facilement</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="info-section">
+                <h3><i class="fas fa-info-circle"></i> Comment utiliser</h3>
+                <p>1. Sélectionnez la plateforme de votre vidéo<br>
+                   2. Collez l'URL de la vidéo<br>
+                   3. Cliquez sur "Obtenir les options de téléchargement"<br>
+                   4. Choisissez votre service de téléchargement préféré</p>
+            </div>
+
+            <!-- Sélecteur de plateforme -->
+            <div class="platform-selector">
+                <button class="platform-btn active" data-platform="youtube">
+                    <i class="fab fa-youtube"></i> YouTube
+                </button>
+                <button class="platform-btn" data-platform="tiktok">
+                    <i class="fab fa-tiktok"></i> TikTok
+                </button>
+                <button class="platform-btn" data-platform="instagram">
+                    <i class="fab fa-instagram"></i> Instagram
+                </button>
+                <button class="platform-btn" data-platform="twitter">
+                    <i class="fab fa-twitter"></i> Twitter
+                </button>
+                <button class="platform-btn" data-platform="facebook">
+                    <i class="fab fa-facebook"></i> Facebook
+                </button>
+            </div>
+            
+            <!-- Formulaire de téléchargement -->
+            <div class="download-form">
+                <div class="input-group">
+                    <input type="url" id="videoUrl" placeholder="Collez l'URL de la vidéo YouTube ici..." required>
+                </div>
+                
+                <button class="download-btn" id="downloadBtn">
+                    <i class="fas fa-search"></i> Obtenir les options de téléchargement
+                </button>
+            </div>
+
+            <!-- Options de téléchargement -->
+            <div class="download-options" id="downloadOptions">
+                <h3 style="margin-bottom: 20px; color: #333;">
+                    <i class="fas fa-download"></i> Options de téléchargement disponibles
+                </h3>
+                <div id="downloadOptionsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let selectedPlatform = 'youtube';
+        let isMobile = window.innerWidth <= 768;
+        const videoUrlInput = document.getElementById('videoUrl');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadOptions = document.getElementById('downloadOptions');
+        const downloadOptionsList = document.getElementById('downloadOptionsList');
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            updatePlaceholder(selectedPlatform);
+        });
+
+        // Configuration des événements
+        function setupEventListeners() {
+            // Sélecteur de plateforme
+            document.querySelectorAll('.platform-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectPlatform(btn.dataset.platform);
+                });
+            });
+
+            // Bouton d'obtention des options
+            downloadBtn.addEventListener('click', getDownloadOptions);
+
+            // Validation de l'URL en temps réel
+            videoUrlInput.addEventListener('input', () => {
+                const url = videoUrlInput.value.trim();
+                if (url) {
+                    const detectedPlatform = detectPlatform(url);
+                    if (detectedPlatform && detectedPlatform !== selectedPlatform) {
+                        selectPlatform(detectedPlatform);
+                    }
+                }
+            });
+        }
+
+        // Sélection de plateforme
+        function selectPlatform(platform) {
+            selectedPlatform = platform;
+            
+            // Mise à jour de l'interface
+            document.querySelectorAll('.platform-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-platform="${platform}"]`).classList.add('active');
+            
+            updatePlaceholder(platform);
+        }
+
+        // Mise à jour du placeholder
+        function updatePlaceholder(platform) {
+            const placeholders = {
+                youtube: 'Collez l\'URL de la vidéo YouTube ici...',
+                tiktok: 'Collez l\'URL de la vidéo TikTok ici...',
+                instagram: 'Collez l\'URL de la vidéo Instagram ici...',
+                twitter: 'Collez l\'URL de la vidéo Twitter ici...',
+                facebook: 'Collez l\'URL de la vidéo Facebook ici...'
+            };
+            
+            videoUrlInput.placeholder = placeholders[platform] || placeholders.youtube;
+        }
+
+        // Détection automatique de la plateforme
+        function detectPlatform(url) {
+            if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
+            if (url.includes('tiktok.com')) return 'tiktok';
+            if (url.includes('instagram.com')) return 'instagram';
+            if (url.includes('twitter.com') || url.includes('x.com')) return 'twitter';
+            if (url.includes('facebook.com')) return 'facebook';
+            return null;
+        }
+
+        // Validation d'URL
+        function validateUrl(url, platform) {
+            const patterns = {
+                youtube: /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/)[\w-]+/,
+                tiktok: /^(https?:\/\/)?(www\.)?tiktok\.com\/@[\w.-]+\/video\/\d+/,
+                instagram: /^(https?:\/\/)?(www\.)?instagram\.com\/(p|reel|tv)\/[\w-]+/,
+                twitter: /^(https?:\/\/)?(www\.)?(twitter\.com|x\.com)\/[\w]+\/status\/\d+/,
+                facebook: /^(https?:\/\/)?(www\.)?facebook\.com\/[\w.-]+\/videos\/\d+/
+            };
+            
+            return patterns[platform] ? patterns[platform].test(url) : true;
+        }
+
+        // Obtenir les options de téléchargement
+        function getDownloadOptions() {
+            const url = videoUrlInput.value.trim();
+            
+            // Validation
+            if (!url) {
+                showNotification('Veuillez entrer une URL de vidéo', 'error');
+                return;
+            }
+            
+            if (!validateUrl(url, selectedPlatform)) {
+                showNotification(`URL invalide pour ${selectedPlatform}. Veuillez vérifier le format.`, 'error');
+                return;
+            }
+
+            // Obtenir les services pour cette plateforme
+            const services = getDownloadServices(selectedPlatform);
+            
+            // Afficher les options
+            displayDownloadOptions(services, url);
+            
+            showNotification('Options de téléchargement générées !', 'success');
+        }
+
+        // Obtenir les services de téléchargement
+        function getDownloadServices(platform) {
+            const services = {
+                youtube: [
+                    {
+                        name: 'SaveFrom.net',
+                        description: 'Service populaire, supporte MP4 et MP3',
+                        url: 'https://savefrom.net/',
+                        icon: 'fas fa-download'
+                    },
+                    {
+                        name: 'Y2Mate',
+                        description: 'Interface simple, plusieurs qualités disponibles',
+                        url: 'https://www.y2mate.com/fr/',
+                        icon: 'fas fa-video'
+                    },
+                    {
+                        name: '9xBuddy',
+                        description: 'Téléchargement rapide, pas de publicité',
+                        url: 'https://9xbuddy.org/',
+                        icon: 'fas fa-rocket'
+                    },
+                    {
+                        name: 'KeepVid',
+                        description: 'Service fiable, supporte de nombreux formats',
+                        url: 'https://keepvid.com/',
+                        icon: 'fas fa-shield-alt'
+                    }
+                ],
+                tiktok: [
+                    {
+                        name: 'SnapTik',
+                        description: 'Spécialisé TikTok, téléchargement sans filigrane',
+                        url: 'https://snaptik.app/fr',
+                        icon: 'fab fa-tiktok'
+                    },
+                    {
+                        name: 'TikMate',
+                        description: 'Interface simple, téléchargement rapide',
+                        url: 'https://tikmate.online/',
+                        icon: 'fas fa-mobile-alt'
+                    },
+                    {
+                        name: 'TTDownloader',
+                        description: 'Haute qualité, sans inscription',
+                        url: 'https://ttdownloader.com/',
+                        icon: 'fas fa-download'
+                    }
+                ],
+                instagram: [
+                    {
+                        name: 'SaveFrom.net',
+                        description: 'Supporte posts, stories et reels',
+                        url: 'https://savefrom.net/',
+                        icon: 'fab fa-instagram'
+                    },
+                    {
+                        name: 'InstaDownloader',
+                        description: 'Spécialisé Instagram, interface moderne',
+                        url: 'https://instadownloader.net/',
+                        icon: 'fas fa-download'
+                    },
+                    {
+                        name: 'DownloadGram',
+                        description: 'Service rapide et gratuit',
+                        url: 'https://downloadgram.org/',
+                        icon: 'fas fa-camera'
+                    }
+                ],
+                twitter: [
+                    {
+                        name: 'TwitterVideoDownloader',
+                        description: 'Spécialisé Twitter, GIF et vidéos',
+                        url: 'https://twittervideodownloader.com/',
+                        icon: 'fab fa-twitter'
+                    },
+                    {
+                        name: 'GetFVid',
+                        description: 'Interface simple, téléchargement direct',
+                        url: 'https://www.getfvid.com/',
+                        icon: 'fas fa-download'
+                    }
+                ],
+                facebook: [
+                    {
+                        name: 'SaveFrom.net',
+                        description: 'Service universel, supporte Facebook',
+                        url: 'https://savefrom.net/',
+                        icon: 'fab fa-facebook'
+                    },
+                    {
+                        name: 'FBDownloader',
+                        description: 'Spécialisé Facebook, HD disponible',
+                        url: 'https://fbdownloader.net/',
+                        icon: 'fas fa-download'
+                    }
+                ]
+            };
+            
+            return services[platform] || services.youtube;
+        }
+
+        // Afficher les options de téléchargement
+        function displayDownloadOptions(services, videoUrl) {
+            downloadOptionsList.innerHTML = '';
+            
+            services.forEach(service => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'download-option';
+                
+                optionElement.innerHTML = `
+                    <div class="download-option-info">
+                        <div class="download-option-title">
+                            <i class="${service.icon}"></i> ${service.name}
+                        </div>
+                        <div class="download-option-desc">${service.description}</div>
+                    </div>
+                    <button class="download-option-btn" onclick="openDownloadService('${service.url}', '${encodeURIComponent(videoUrl)}')">
+                        <i class="fas fa-external-link-alt"></i> Utiliser ce service
+                    </button>
+                `;
+                
+                downloadOptionsList.appendChild(optionElement);
+            });
+            
+            downloadOptions.classList.add('show');
+        }
+
+        // Ouvrir le service de téléchargement
+        function openDownloadService(serviceUrl, encodedVideoUrl) {
+            const videoUrl = decodeURIComponent(encodedVideoUrl);
+            
+            // Construire l'URL complète selon le service
+            let fullUrl = serviceUrl;
+            
+            if (serviceUrl.includes('savefrom.net')) {
+                fullUrl = `${serviceUrl}#url=${encodeURIComponent(videoUrl)}`;
+            } else if (serviceUrl.includes('y2mate.com')) {
+                fullUrl = `${serviceUrl}analyze?q=${encodeURIComponent(videoUrl)}`;
+            } else if (serviceUrl.includes('9xbuddy.org')) {
+                fullUrl = `${serviceUrl}process?url=${encodeURIComponent(videoUrl)}`;
+            } else if (serviceUrl.includes('snaptik.app')) {
+                fullUrl = `${serviceUrl}?url=${encodeURIComponent(videoUrl)}`;
+            } else if (serviceUrl.includes('tikmate.online')) {
+                fullUrl = `${serviceUrl}?url=${encodeURIComponent(videoUrl)}`;
+            } else if (serviceUrl.includes('twittervideodownloader.com')) {
+                fullUrl = `${serviceUrl}?url=${encodeURIComponent(videoUrl)}`;
+            } else {
+                fullUrl = `${serviceUrl}?url=${encodeURIComponent(videoUrl)}`;
+            }
+            
+            // Ouvrir dans une nouvelle fenêtre
+            window.open(fullUrl, '_blank');
+            
+            showNotification('Service de téléchargement ouvert dans un nouvel onglet', 'info');
+        }
+
+        // Afficher une notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            notification.innerHTML = `
+                <i class="${icons[type]}"></i> ${message}
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // Gestion responsive
+        window.addEventListener('resize', () => {
+            isMobile = window.innerWidth <= 768;
+        });
+    </script>
+</body>
+</html>
