@@ -283,11 +283,11 @@ function selectPlatform(platform) {
 
 function updatePlaceholder(platform) {
     const placeholders = {
-        youtube: 'https://www.youtube.com/watch?v=...',
+        youtube: 'https://www.youtube.com/watch?v=... ou /shorts/... ou youtu.be/...',
         instagram: 'https://www.instagram.com/p/... ou /reel/... ou /tv/...',
         tiktok: 'https://www.tiktok.com/@user/video/...',
-        facebook: 'https://www.facebook.com/watch?v=...',
-        twitter: 'https://twitter.com/user/status/...'
+        facebook: 'https://www.facebook.com/watch?v=... ou /videos/...',
+        twitter: 'https://twitter.com/user/status/... ou x.com/...'
     };
     
     videoUrlInput.placeholder = placeholders[platform] || 'Collez l\'URL de la vidéo...';
@@ -311,14 +311,19 @@ function detectPlatform() {
 
 function validateUrl(url, platform) {
     const patterns = {
-        youtube: /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9_-]+/,
+        youtube: /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|shorts\/|v\/)|youtu\.be\/)[\w-]+/,
         instagram: /^(https?:\/\/)?(www\.)?instagram\.com\/(p|reel|tv)\/[\w-]+/,
-        tiktok: /^(https?:\/\/)?(www\.)?tiktok\.com\/@[a-zA-Z0-9._-]+\/video\/[0-9]+/,
-        facebook: /^(https?:\/\/)?(www\.)?facebook\.com\/watch\?v=[0-9]+/,
-        twitter: /^(https?:\/\/)?(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9._-]+\/status\/[0-9]+/
+        tiktok: /^(https?:\/\/)?(www\.)?tiktok\.com\/@[\w.-]+\/video\/\d+/,
+        facebook: /^(https?:\/\/)?(www\.)?facebook\.com\/(watch\?v=|videos\/|posts\/|.*\/videos\/)[\w.-]+/,
+        twitter: /^(https?:\/\/)?(www\.)?(twitter\.com|x\.com)\/[\w.-]+\/status\/\d+/
     };
     
-    return patterns[platform] ? patterns[platform].test(url) : true;
+    // Pour les tests de développement, on peut être plus permissif
+    if (!patterns[platform]) return true;
+    
+    // Nettoyer l'URL des paramètres pour une validation plus robuste
+    const cleanUrl = url.split('?')[0].split('#')[0];
+    return patterns[platform].test(cleanUrl) || patterns[platform].test(url);
 }
 
 async function handleDownload() {
@@ -340,6 +345,20 @@ async function handleDownload() {
     showLoadingModal();
     
     try {
+        // Diagnostic des services
+        updateLoadingMessage('Vérification des services disponibles...');
+        const availableServices = await checkServicesAvailability(selectedPlatform);
+        
+        if (availableServices.length === 0) {
+            closeLoadingModal();
+            showErrorWithAlternatives(
+                `Aucun service de téléchargement disponible pour ${selectedPlatform}`,
+                url,
+                selectedPlatform
+            );
+            return;
+        }
+        
         // Téléchargement direct sans API
         updateLoadingMessage('Préparation du téléchargement...');
         const result = await downloadDirect(url, selectedPlatform, quality);
@@ -356,7 +375,11 @@ async function handleDownload() {
         // Démarrer le téléchargement
         if (result.success) {
             startDirectDownload(result.downloadUrl, result.filename || 'video');
-            showSuccess(`Téléchargement démarré pour ${result.title || 'la vidéo'} !`);
+            showSuccessWithDownload(
+                `Ouverture du service de téléchargement pour ${result.title || 'la vidéo'}`,
+                result.downloadUrl,
+                result.filename || 'video'
+            );
         } else {
             showError(result.error || 'Échec du téléchargement');
         }
@@ -493,6 +516,28 @@ function selectDownloadService(platform, quality) {
 function buildDownloadUrl(service, videoUrl, quality) {
     const encodedUrl = encodeURIComponent(videoUrl);
     return service.baseUrl + service.pattern.replace('{URL}', encodedUrl);
+}
+
+// Vérifier la disponibilité des services
+async function checkServicesAvailability(platform) {
+    const services = getAlternativeServices(platform);
+    const availableServices = [];
+    
+    for (const service of services) {
+        try {
+            // Test simple de connectivité
+            const response = await fetch(service.baseUrl, { 
+                method: 'HEAD', 
+                mode: 'no-cors',
+                cache: 'no-cache'
+            });
+            availableServices.push(service);
+        } catch (error) {
+            console.warn(`Service ${service.name} non disponible:`, error);
+        }
+    }
+    
+    return availableServices;
 }
 
 // Démarrer le téléchargement direct
@@ -737,65 +782,95 @@ function showSuccess(message) {
 }
 
 function showSuccessWithDownload(message, downloadUrl, filename) {
-    // Déclencher automatiquement le téléchargement
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = filename;
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Créer une notification de succès
-    const notification = document.createElement('div');
-    notification.className = 'notification download-notification';
-    notification.style.cssText = `
+    const modal = document.createElement('div');
+    modal.className = 'modal success-modal';
+    modal.style.cssText = `
         position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #4CAF50;
-        color: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        z-index: 1001;
-        animation: slideIn 0.3s ease;
-        max-width: 300px;
-        word-wrap: break-word;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    `;
+    
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
     `;
     
     // Adaptation mobile
     if (isMobile) {
-        notification.style.cssText += `
-            left: 20px;
-            right: 20px;
-            max-width: none;
-            top: 10px;
-            padding: 16px;
+        content.style.cssText += `
+            padding: 20px;
+            margin: 20px;
             font-size: 14px;
         `;
     }
     
-    notification.innerHTML = `
-        <div style="margin-bottom: 10px;">
-            <i class="fas fa-check-circle"></i> ${message}
+    content.innerHTML = `
+        <div style="color: #FF9800; margin-bottom: 20px;">
+            <i class="fas fa-arrow-right" style="font-size: 48px; margin-bottom: 15px;"></i>
+            <h3 style="margin: 0 0 10px 0; color: #333;">Redirection vers le service</h3>
+            <p style="margin: 0; color: #666;">${message}</p>
         </div>
-        <div style="font-size: 0.9em; opacity: 0.9;">
-            Le téléchargement a commencé automatiquement
+        
+        <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left;">
+            <strong>⚠️ Important :</strong><br>
+            • Cette application redirige vers des services externes<br>
+            • Vous devrez coller votre URL sur le service de téléchargement<br>
+            • Si un service ne fonctionne pas, revenez essayer les alternatives<br>
+            • Certains services peuvent afficher des publicités
         </div>
+        
+        <div style="margin-bottom: 25px;">
+            <button id="openDownloadBtn" style="background: #4CAF50; color: white; border: none; 
+                    padding: 12px 24px; border-radius: 25px; font-size: 16px; cursor: pointer; 
+                    margin: 0 10px 10px 0; transition: all 0.3s;">
+                <i class="fas fa-external-link-alt"></i> Ouvrir le service
+            </button>
+        </div>
+        
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left;">
+            <strong>📋 Instructions :</strong><br>
+            1. Cliquez sur "Ouvrir le service" ci-dessus<br>
+            2. Collez votre URL vidéo sur le site<br>
+            3. Sélectionnez la qualité souhaitée<br>
+            4. Téléchargez votre vidéo
+        </div>
+        
+        <button id="closeSuccessBtn" style="background: #666; color: white; border: none; 
+                padding: 10px 20px; border-radius: 20px; cursor: pointer;">
+            J'ai compris
+        </button>
     `;
     
-    document.body.appendChild(notification);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
     
-    // Supprimer après 5 secondes
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            if (document.body.contains(notification)) {
-                document.body.removeChild(notification);
-            }
-        }, 300);
-    }, 5000);
+    // Gestionnaires d'événements
+    document.getElementById('openDownloadBtn').onclick = () => {
+        window.open(downloadUrl, '_blank');
+    };
+    
+    document.getElementById('closeSuccessBtn').onclick = () => {
+        closeModal(modal);
+    };
+    
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            closeModal(modal);
+        }
+    };
 }
 
 async function tryAlternativeServices(url, platform, quality) {
