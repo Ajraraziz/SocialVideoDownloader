@@ -1,0 +1,708 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.logo i {
+    font-size: 2.5rem;
+    color: #ff6b6b;
+}
+
+.logo h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 30px;
+    align-items: start;
+}
+
+.download-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+}
+
+.platform-selector, .url-input-section, .quality-selector {
+    margin-bottom: 30px;
+}
+
+.platform-selector h3, .url-input-section h3, .quality-selector h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.platform-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.platform-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 15px 10px;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.platform-btn:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+}
+
+.platform-btn.active {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.platform-btn i {
+    font-size: 1.5rem;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.url-input {
+    flex: 1;
+    padding: 15px 20px;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.url-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.download-btn {
+    padding: 15px 25px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.download-btn:active {
+    transform: translateY(0);
+}
+
+.quality-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.quality-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quality-option:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.quality-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #667eea;
+}
+
+.quality-label {
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.download-history {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+}
+
+.download-history h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.history-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid #e1e5e9;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.history-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+}
+
+.history-item i {
+    font-size: 1.2rem;
+    color: #667eea;
+}
+
+.history-info {
+    flex: 1;
+}
+
+.history-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.history-url {
+    font-size: 0.9rem;
+    color: #666;
+    word-break: break-all;
+}
+
+.history-date {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e1e5e9;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-icon {
+    font-size: 3rem;
+    color: #ff6b6b;
+    margin-bottom: 20px;
+}
+
+.close-btn {
+    margin-top: 20px;
+    padding: 12px 25px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background: #5a6fd8;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design - Amélioré pour mobile */
+@media (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .platform-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .platform-btn {
+        padding: 12px 8px;
+        font-size: 0.8rem;
+    }
+    
+    .platform-btn i {
+        font-size: 1.2rem;
+    }
+    
+    .input-group {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .url-input {
+        padding: 12px 16px;
+        font-size: 16px; /* Évite le zoom sur iOS */
+    }
+    
+    .download-btn {
+        padding: 12px 20px;
+        font-size: 16px;
+        justify-content: center;
+        min-height: 48px; /* Zone de toucher minimale */
+    }
+    
+    .quality-options {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .quality-option {
+        padding: 10px 12px;
+        min-height: 44px; /* Zone de toucher minimale */
+    }
+    
+    .logo h1 {
+        font-size: 1.8rem;
+    }
+    
+    .logo i {
+        font-size: 2rem;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    .download-card, .download-history {
+        padding: 20px;
+        border-radius: 15px;
+    }
+    
+    .header {
+        margin-bottom: 25px;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+    }
+    
+    /* Instructions mobile */
+    .instructions {
+        font-size: 0.85rem !important;
+        padding: 12px !important;
+        margin-top: 12px !important;
+    }
+    
+    .instructions ol {
+        padding-left: 15px !important;
+    }
+    
+    .instructions li {
+        margin-bottom: 5px;
+    }
+    
+    /* Historique mobile */
+    .history-item {
+        padding: 12px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .history-info {
+        min-width: 0;
+        flex: 1;
+    }
+    
+    .history-title {
+        font-size: 0.9rem;
+    }
+    
+    .history-url {
+        font-size: 0.8rem;
+        line-height: 1.3;
+    }
+    
+    .history-date {
+        font-size: 0.75rem;
+    }
+    
+    /* Modales mobile */
+    .modal-content {
+        padding: 25px 20px;
+        margin: 20px;
+        max-width: none;
+        width: calc(100% - 40px);
+    }
+    
+    /* Notifications mobile */
+    .notification {
+        max-width: calc(100vw - 40px) !important;
+        right: 20px !important;
+        left: 20px !important;
+        top: 20px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .platform-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+    
+    .platform-btn {
+        padding: 10px 6px;
+        font-size: 0.75rem;
+        border-radius: 8px;
+    }
+    
+    .platform-btn i {
+        font-size: 1.1rem;
+    }
+    
+    .logo {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .logo h1 {
+        font-size: 1.6rem;
+        text-align: center;
+    }
+    
+    .logo i {
+        font-size: 1.8rem;
+    }
+    
+    .subtitle {
+        font-size: 0.9rem;
+        padding: 0 10px;
+    }
+    
+    .container {
+        padding: 8px;
+    }
+    
+    .download-card, .download-history {
+        padding: 15px;
+        border-radius: 12px;
+    }
+    
+    .platform-selector h3, 
+    .url-input-section h3, 
+    .quality-selector h3,
+    .download-history h3 {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+    
+    .url-input {
+        padding: 10px 14px;
+        border-radius: 8px;
+    }
+    
+    .download-btn {
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 15px;
+    }
+    
+    .quality-option {
+        padding: 8px 10px;
+        border-radius: 8px;
+    }
+    
+    .quality-option input[type="radio"] {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .history-item {
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+    }
+    
+    .history-item i {
+        font-size: 1rem;
+    }
+    
+    /* Boutons d'action mobile */
+    .history-item button,
+    .history-item a {
+        min-width: 36px;
+        min-height: 36px;
+        padding: 6px !important;
+        font-size: 0.8rem !important;
+        border-radius: 6px !important;
+    }
+    
+    /* Instructions encore plus compactes */
+    .instructions {
+        font-size: 0.8rem !important;
+        padding: 10px !important;
+    }
+    
+    .instructions h4 {
+        font-size: 0.9rem !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .instructions ol {
+        padding-left: 12px !important;
+    }
+    
+    .instructions li {
+        margin-bottom: 4px;
+        line-height: 1.3;
+    }
+}
+
+/* Styles spécifiques pour très petits écrans */
+@media (max-width: 360px) {
+    .platform-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .platform-btn {
+        flex-direction: row;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 4px;
+    }
+    
+    .logo h1 {
+        font-size: 1.4rem;
+    }
+    
+    .logo i {
+        font-size: 1.6rem;
+    }
+    
+    .subtitle {
+        font-size: 0.85rem;
+    }
+    
+    .container {
+        padding: 5px;
+    }
+    
+    .download-card, .download-history {
+        padding: 12px;
+    }
+}
+
+/* Styles pour les appareils en mode paysage sur mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .header {
+        margin-bottom: 15px;
+    }
+    
+    .logo h1 {
+        font-size: 1.5rem;
+    }
+    
+    .logo i {
+        font-size: 1.6rem;
+    }
+    
+    .subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .main-content {
+        gap: 15px;
+    }
+    
+    .download-card, .download-history {
+        padding: 15px;
+    }
+    
+    .platform-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .quality-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Amélioration de l'accessibilité tactile */
+@media (hover: none) and (pointer: coarse) {
+    /* Désactiver les effets hover sur les appareils tactiles */
+    .platform-btn:hover,
+    .download-btn:hover,
+    .quality-option:hover,
+    .history-item:hover,
+    .close-btn:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    /* Augmenter les zones de toucher */
+    .platform-btn,
+    .download-btn,
+    .quality-option,
+    .history-item button,
+    .history-item a,
+    .close-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Améliorer la visibilité des états actifs */
+    .platform-btn:active,
+    .download-btn:active,
+    .quality-option:active {
+        transform: scale(0.98);
+        opacity: 0.8;
+    }
+}
+
+/* Support pour les écrans haute densité */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .logo i,
+    .platform-btn i,
+    .history-item i {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Amélioration de la performance sur mobile */
+@media (max-width: 768px) {
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .download-card,
+    .download-history {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        will-change: transform;
+    }
+    
+    /* Optimisation des animations */
+    .platform-btn,
+    .download-btn,
+    .quality-option {
+        transition: all 0.2s ease;
+    }
+}
+
+/* Scrollbar styling */
+.history-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+    background: #5a6fd8;
+} 

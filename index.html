@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Video Downloader</title>
+    <meta name="description" content="Téléchargez vos vidéos préférées depuis YouTube, Instagram, TikTok, Facebook et Twitter">
+    <meta name="keywords" content="télécharger vidéo, youtube, instagram, tiktok, facebook, twitter">
+    <meta name="author" content="Social Video Downloader">
+    
+    <!-- PWA Support -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="VideoDL">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iMjAiIGZpbGw9InVybCgjZ3JhZGllbnQpIi8+CjxwYXRoIGQ9Ik05MCA0NUM3MS4yMjUgNDUgNTYgNjAuMjI1IDU2IDc5VjEzNUM1NiAxNTMuNzc1IDcxLjIyNSAxNjkgOTAgMTY5QzEwOC43NzUgMTY5IDEyNCAxNTMuNzc1IDEyNCAxMzVWNzlDMTI0IDYwLjIyNSAxMDguNzc1IDQ1IDkwIDQ1WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iODIgODlDODIgODUuMTM0IDg1LjEzNCA4MiA4OSA4Mkg5MUM5NC44NjYgODIgOTggODUuMTM0IDk4IDg5VjEyN0M5OCAxMzAuODY2IDk0Ljg2NiAxMzQgOTEgMTM0SDg5Qzg1LjEzNCAxMzQgODIgMTMwLjg2NiA4MiAxMjdWODlaIiBmaWxsPSIjNjY3RUVBIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50IiB4MT0iMCIgeTE9IjAiIHgyPSIxODAiIHkyPSIxODAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzY2N0VFQSIvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3NjRCQTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4=">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://votre-username.github.io/social-video-downloader/">
+    <meta property="og:title" content="Social Video Downloader">
+    <meta property="og:description" content="Téléchargez vos vidéos préférées depuis les réseaux sociaux">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://votre-username.github.io/social-video-downloader/">
+    <meta property="twitter:title" content="Social Video Downloader">
+    <meta property="twitter:description" content="Téléchargez vos vidéos préférées depuis les réseaux sociaux">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-download"></i>
+                <h1>Social Video Downloader</h1>
+            </div>
+            <p class="subtitle">Téléchargez vos vidéos préférées depuis les réseaux sociaux</p>
+            
+            <!-- Instructions pour GitHub Pages -->
+            <div class="instructions" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-top: 15px; font-size: 0.9rem;">
+                <h4 style="margin: 0 0 10px 0; color: #fff;"><i class="fas fa-info-circle"></i> Comment utiliser :</h4>
+                <ol style="margin: 0; padding-left: 20px; text-align: left;">
+                    <li>Collez l'URL de la vidéo que vous voulez télécharger</li>
+                    <li>Sélectionnez la qualité souhaitée</li>
+                    <li>Cliquez sur "Télécharger"</li>
+                    <li>Si le téléchargement direct ne fonctionne pas, des alternatives s'ouvriront automatiquement</li>
+                </ol>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="download-card">
+                <div class="platform-selector">
+                    <h3>Sélectionnez la plateforme</h3>
+                    <div class="platform-buttons">
+                        <button class="platform-btn active" data-platform="youtube">
+                            <i class="fab fa-youtube"></i>
+                            YouTube
+                        </button>
+                        <button class="platform-btn" data-platform="instagram">
+                            <i class="fab fa-instagram"></i>
+                            Instagram
+                        </button>
+                        <button class="platform-btn" data-platform="tiktok">
+                            <i class="fab fa-tiktok"></i>
+                            TikTok
+                        </button>
+                        <button class="platform-btn" data-platform="facebook">
+                            <i class="fab fa-facebook"></i>
+                            Facebook
+                        </button>
+                        <button class="platform-btn" data-platform="twitter">
+                            <i class="fab fa-twitter"></i>
+                            Twitter
+                        </button>
+                    </div>
+                </div>
+
+                <div class="url-input-section">
+                    <h3>Collez l'URL de la vidéo</h3>
+                    <div class="input-group">
+                        <input type="url" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." class="url-input">
+                        <button id="downloadBtn" class="download-btn">
+                            <i class="fas fa-download"></i>
+                            Télécharger
+                        </button>
+                    </div>
+                </div>
+
+                <div class="quality-selector">
+                    <h3>Qualité de la vidéo</h3>
+                    <div class="quality-options">
+                        <label class="quality-option">
+                            <input type="radio" name="quality" value="best" checked>
+                            <span class="quality-label">Meilleure qualité</span>
+                        </label>
+                        <label class="quality-option">
+                            <input type="radio" name="quality" value="720p">
+                            <span class="quality-label">720p</span>
+                        </label>
+                        <label class="quality-option">
+                            <input type="radio" name="quality" value="480p">
+                            <span class="quality-label">480p</span>
+                        </label>
+                        <label class="quality-option">
+                            <input type="radio" name="quality" value="audio">
+                            <span class="quality-label">Audio uniquement</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="download-history">
+                <h3>Historique des téléchargements</h3>
+                <div id="historyList" class="history-list">
+                    <!-- L'historique sera généré dynamiquement -->
+                </div>
+            </div>
+        </main>
+
+        <div id="loadingModal" class="modal">
+            <div class="modal-content">
+                <div class="spinner"></div>
+                <h3>Téléchargement en cours...</h3>
+                <p>Veuillez patienter pendant que nous traitons votre vidéo</p>
+            </div>
+        </div>
+
+        <div id="errorModal" class="modal">
+            <div class="modal-content">
+                <i class="fas fa-exclamation-triangle error-icon"></i>
+                <h3>Erreur</h3>
+                <p id="errorMessage">Une erreur s'est produite lors du téléchargement</p>
+                <button class="close-btn" onclick="closeErrorModal()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
