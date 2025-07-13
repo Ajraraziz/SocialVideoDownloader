@@ -284,7 +284,7 @@ function selectPlatform(platform) {
 function updatePlaceholder(platform) {
     const placeholders = {
         youtube: 'https://www.youtube.com/watch?v=...',
-        instagram: 'https://www.instagram.com/p/...',
+        instagram: 'https://www.instagram.com/p/... ou /reel/... ou /tv/...',
         tiktok: 'https://www.tiktok.com/@user/video/...',
         facebook: 'https://www.facebook.com/watch?v=...',
         twitter: 'https://twitter.com/user/status/...'
@@ -312,7 +312,7 @@ function detectPlatform() {
 function validateUrl(url, platform) {
     const patterns = {
         youtube: /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9_-]+/,
-        instagram: /^(https?:\/\/)?(www\.)?instagram\.com\/p\/[a-zA-Z0-9_-]+/,
+        instagram: /^(https?:\/\/)?(www\.)?instagram\.com\/(p|reel|tv)\/[\w-]+/,
         tiktok: /^(https?:\/\/)?(www\.)?tiktok\.com\/@[a-zA-Z0-9._-]+\/video\/[0-9]+/,
         facebook: /^(https?:\/\/)?(www\.)?facebook\.com\/watch\?v=[0-9]+/,
         twitter: /^(https?:\/\/)?(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9._-]+\/status\/[0-9]+/
