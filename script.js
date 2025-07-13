@@ -340,11 +340,12 @@ async function handleDownload() {
     showLoadingModal();
     
     try {
-        // Essayer d'abord avec l'API externe
-        const backendResult = await downloadWithBackend(url, selectedPlatform, quality);
+        // Téléchargement direct sans API
+        updateLoadingMessage('Préparation du téléchargement...');
+        const result = await downloadDirect(url, selectedPlatform, quality);
         
         // Ajouter à l'historique
-        addToHistory(url, selectedPlatform, quality, backendResult);
+        addToHistory(url, selectedPlatform, quality, result);
         
         // Réinitialiser le formulaire
         videoUrlInput.value = '';
@@ -352,58 +353,177 @@ async function handleDownload() {
         // Fermer le modal de chargement
         closeLoadingModal();
         
-        // Afficher un message de succès avec lien de téléchargement
-        if (backendResult && backendResult.downloadUrl) {
-            showSuccessWithDownload('Vidéo prête à télécharger !', backendResult.downloadUrl, backendResult.filename);
+        // Démarrer le téléchargement
+        if (result.success) {
+            startDirectDownload(result.downloadUrl, result.filename || 'video');
+            showSuccess(`Téléchargement démarré pour ${result.title || 'la vidéo'} !`);
         } else {
-            showSuccess('Vidéo téléchargée avec succès !');
+            showError(result.error || 'Échec du téléchargement');
         }
         
     } catch (error) {
-        console.log('API externe non disponible, utilisation des alternatives');
-        
-        try {
-            // Essayer avec des services alternatifs
-            await tryAlternativeServices(url, selectedPlatform, quality);
-            
-            // Ajouter à l'historique
-            addToHistory(url, selectedPlatform, quality);
-            
-            // Réinitialiser le formulaire
-            videoUrlInput.value = '';
-            
-            // Fermer le modal de chargement
-            closeLoadingModal();
-            
-            // Afficher un message de succès
-            showSuccess('Vidéo téléchargée avec succès ! (Service alternatif)');
-            
-        } catch (altError) {
-            closeLoadingModal();
-            showErrorWithAlternatives(altError.message, url, selectedPlatform);
-        }
+        console.error('Erreur lors du téléchargement:', error);
+        closeLoadingModal();
+        showError(`Erreur de téléchargement: ${error.message}`);
     }
 }
 
-async function simulateDownload(url, platform, quality) {
-    // Simulation d'un téléchargement
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            // Simuler une erreur aléatoire (10% de chance)
-            if (Math.random() < 0.1) {
-                reject(new Error('Erreur de téléchargement. Veuillez réessayer.'));
-                return;
+// Fonction de téléchargement direct sans API
+async function downloadDirect(url, platform, quality) {
+    try {
+        // Extraire les informations basiques de l'URL
+        const videoInfo = extractBasicVideoInfo(url, platform);
+        
+        // Sélectionner le service de téléchargement approprié
+        const downloadService = selectDownloadService(platform, quality);
+        
+        // Construire l'URL de téléchargement
+        const downloadUrl = buildDownloadUrl(downloadService, url, quality);
+        
+        return {
+            success: true,
+            downloadUrl: downloadUrl,
+            filename: `${videoInfo.title}.${getFileExtension(quality)}`,
+            title: videoInfo.title,
+            message: 'Téléchargement préparé'
+        };
+        
+    } catch (error) {
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// Extraire les informations basiques de l'URL
+function extractBasicVideoInfo(url, platform) {
+    const videoId = extractVideoId(url, platform);
+    let title = `${platform}_${videoId}`;
+    
+    // Essayer d'extraire un titre plus propre
+    try {
+        if (platform === 'youtube') {
+            title = `YouTube_${videoId}`;
+        } else if (platform === 'tiktok') {
+            title = `TikTok_${Date.now()}`;
+        } else if (platform === 'instagram') {
+            title = `Instagram_${Date.now()}`;
+        } else if (platform === 'twitter') {
+            title = `Twitter_${Date.now()}`;
+        } else if (platform === 'facebook') {
+            title = `Facebook_${Date.now()}`;
+        }
+    } catch (error) {
+        title = `video_${Date.now()}`;
+    }
+    
+    return {
+        title: title,
+        videoId: videoId,
+        url: url
+    };
+}
+
+// Sélectionner le service de téléchargement
+function selectDownloadService(platform, quality) {
+    const services = {
+        youtube: [
+            {
+                name: 'SaveFrom',
+                baseUrl: 'https://savefrom.net/',
+                pattern: '#url={URL}'
+            },
+            {
+                name: 'Y2Mate',
+                baseUrl: 'https://www.y2mate.com/fr/',
+                pattern: 'analyze?q={URL}'
+            },
+            {
+                name: '9xBuddy',
+                baseUrl: 'https://9xbuddy.org/process',
+                pattern: '?url={URL}'
             }
-            
-            // Simuler un succès
-            resolve({
-                url: url,
-                platform: platform,
-                quality: quality,
-                filename: `video_${Date.now()}.mp4`
-            });
-        }, 2000 + Math.random() * 3000); // 2-5 secondes
-    });
+        ],
+        tiktok: [
+            {
+                name: 'SnapTik',
+                baseUrl: 'https://snaptik.app/fr',
+                pattern: '?url={URL}'
+            },
+            {
+                name: 'TikMate',
+                baseUrl: 'https://tikmate.online/',
+                pattern: '?url={URL}'
+            }
+        ],
+        instagram: [
+            {
+                name: 'SaveFrom',
+                baseUrl: 'https://savefrom.net/',
+                pattern: '#url={URL}'
+            },
+            {
+                name: 'InstaDownloader',
+                baseUrl: 'https://instadownloader.net/',
+                pattern: '?url={URL}'
+            }
+        ],
+        twitter: [
+            {
+                name: 'TwitterVideoDownloader',
+                baseUrl: 'https://twittervideodownloader.com/',
+                pattern: '?url={URL}'
+            }
+        ],
+        facebook: [
+            {
+                name: 'SaveFrom',
+                baseUrl: 'https://savefrom.net/',
+                pattern: '#url={URL}'
+            }
+        ]
+    };
+    
+    const platformServices = services[platform] || services.youtube;
+    return platformServices[0]; // Utiliser le premier service disponible
+}
+
+// Construire l'URL de téléchargement
+function buildDownloadUrl(service, videoUrl, quality) {
+    const encodedUrl = encodeURIComponent(videoUrl);
+    return service.baseUrl + service.pattern.replace('{URL}', encodedUrl);
+}
+
+// Démarrer le téléchargement direct
+function startDirectDownload(downloadUrl, filename) {
+    // Créer un iframe caché pour éviter de quitter la page
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = downloadUrl;
+    document.body.appendChild(iframe);
+    
+    // Supprimer l'iframe après 10 secondes
+    setTimeout(() => {
+        if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+        }
+    }, 10000);
+}
+
+// Obtenir l'extension de fichier selon la qualité
+function getFileExtension(quality) {
+    switch (quality) {
+        case 'audio':
+            return 'mp3';
+        case 'low':
+        case 'medium':
+        case 'high':
+        case 'best':
+            return 'mp4';
+        default:
+            return 'mp4';
+    }
 }
 
 function addToHistory(url, platform, quality, backendResult = null) {
@@ -437,16 +557,13 @@ function addToHistory(url, platform, quality, backendResult = null) {
 }
 
 async function saveHistoryToBackend() {
+    // Sauvegarder dans le localStorage seulement
     try {
-        await fetch('/api/history', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ history: downloadHistory })
-        });
+        localStorage.setItem('videoDownloadHistory', JSON.stringify(downloadHistory));
+        return true;
     } catch (error) {
-        console.log('Impossible de sauvegarder l\'historique sur le backend');
+        console.warn('Impossible de sauvegarder l\'historique:', error);
+        return false;
     }
 }
 
@@ -573,56 +690,6 @@ function closeModal(modal) {
     modal.style.display = 'none';
 }
 
-async function downloadWithBackend(url, platform, quality) {
-    try {
-        // Utiliser une API de téléchargement externe
-        const apiUrl = 'https://api.vevioz.com/api/button/mp4/';
-        
-        // Construire l'URL de l'API selon la plateforme
-        let downloadUrl;
-        switch (platform) {
-            case 'youtube':
-                downloadUrl = `${apiUrl}${encodeURIComponent(url)}`;
-                break;
-            case 'instagram':
-                downloadUrl = `https://api.vevioz.com/api/button/instagram/${encodeURIComponent(url)}`;
-                break;
-            case 'tiktok':
-                downloadUrl = `https://api.vevioz.com/api/button/tiktok/${encodeURIComponent(url)}`;
-                break;
-            case 'facebook':
-                downloadUrl = `https://api.vevioz.com/api/button/facebook/${encodeURIComponent(url)}`;
-                break;
-            case 'twitter':
-                downloadUrl = `https://api.vevioz.com/api/button/twitter/${encodeURIComponent(url)}`;
-                break;
-            default:
-                throw new Error('Plateforme non supportée');
-        }
-        
-        // Créer un lien de téléchargement direct
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `video_${platform}_${Date.now()}.mp4`;
-        link.target = '_blank';
-        
-        // Déclencher le téléchargement
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        return {
-            downloadUrl: downloadUrl,
-            filename: `video_${platform}_${Date.now()}.mp4`,
-            success: true
-        };
-        
-    } catch (error) {
-        console.error('Erreur API externe:', error);
-        throw new Error('Impossible de télécharger la vidéo. Essayez une autre URL.');
-    }
-}
-
 function showSuccess(message) {
     // Créer une notification de succès temporaire
     const notification = document.createElement('div');
@@ -670,7 +737,16 @@ function showSuccess(message) {
 }
 
 function showSuccessWithDownload(message, downloadUrl, filename) {
-    // Créer une notification de succès avec lien de téléchargement
+    // Déclencher automatiquement le téléchargement
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Créer une notification de succès
     const notification = document.createElement('div');
     notification.className = 'notification download-notification';
     notification.style.cssText = `
@@ -700,25 +776,18 @@ function showSuccessWithDownload(message, downloadUrl, filename) {
         `;
     }
     
-    const downloadButtonStyle = isMobile ? 
-        `display: block; background: white; color: #4CAF50; 
-         padding: 10px 15px; border-radius: 6px; text-decoration: none; 
-         font-weight: 600; margin-top: 12px; text-align: center; font-size: 14px;` :
-        `display: inline-block; background: white; color: #4CAF50; 
-         padding: 8px 15px; border-radius: 5px; text-decoration: none; 
-         font-weight: 600; margin-top: 10px;`;
-    
     notification.innerHTML = `
-        <div style="margin-bottom: 10px;">${message}</div>
-        <a href="${downloadUrl}" download="${filename}" 
-           style="${downloadButtonStyle}">
-            <i class="fas fa-download"></i> Télécharger le fichier
-        </a>
+        <div style="margin-bottom: 10px;">
+            <i class="fas fa-check-circle"></i> ${message}
+        </div>
+        <div style="font-size: 0.9em; opacity: 0.9;">
+            Le téléchargement a commencé automatiquement
+        </div>
     `;
     
     document.body.appendChild(notification);
     
-    // Supprimer après 10 secondes
+    // Supprimer après 5 secondes
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => {
@@ -726,130 +795,207 @@ function showSuccessWithDownload(message, downloadUrl, filename) {
                 document.body.removeChild(notification);
             }
         }, 300);
-    }, 10000);
+    }, 5000);
 }
 
 async function tryAlternativeServices(url, platform, quality) {
-    // Essayer différents services de téléchargement
-    const services = [
-        {
-            name: 'SaveFrom.net',
-            url: `https://en.savefrom.net/${encodeURIComponent(url)}`
-        },
-        {
-            name: 'Y2Mate',
-            url: `https://www.y2mate.com/youtube/${extractVideoId(url, platform)}`
-        },
-        {
-            name: 'Online Video Converter',
-            url: `https://onlinevideoconverter.com/fr/youtube-converter?url=${encodeURIComponent(url)}`
-        }
-    ];
+    // Services de téléchargement alternatifs côté client
+    const alternatives = getAlternativeServices(platform);
     
-    // Ouvrir le premier service dans un nouvel onglet
-    const service = services[0];
-    window.open(service.url, '_blank');
+    // Retourner la liste des services alternatifs
+    return alternatives.map(service => ({
+        name: service.name,
+        url: buildDownloadUrl(service, url, quality),
+        description: `Télécharger via ${service.name}`
+    }));
+}
+
+function getAlternativeServices(platform) {
+    const allServices = {
+        youtube: [
+            {
+                name: 'SaveFrom.net',
+                baseUrl: 'https://savefrom.net/',
+                pattern: '#url={URL}'
+            },
+            {
+                name: 'Y2Mate',
+                baseUrl: 'https://www.y2mate.com/fr/',
+                pattern: 'analyze?q={URL}'
+            },
+            {
+                name: '9xBuddy',
+                baseUrl: 'https://9xbuddy.org/process',
+                pattern: '?url={URL}'
+            },
+            {
+                name: 'KeepVid',
+                baseUrl: 'https://keepvid.com/',
+                pattern: '?url={URL}'
+            }
+        ],
+        tiktok: [
+            {
+                name: 'SnapTik',
+                baseUrl: 'https://snaptik.app/fr',
+                pattern: '?url={URL}'
+            },
+            {
+                name: 'TikMate',
+                baseUrl: 'https://tikmate.online/',
+                pattern: '?url={URL}'
+            },
+            {
+                name: 'TTDownloader',
+                baseUrl: 'https://ttdownloader.com/',
+                pattern: '?url={URL}'
+            }
+        ],
+        instagram: [
+            {
+                name: 'SaveFrom.net',
+                baseUrl: 'https://savefrom.net/',
+                pattern: '#url={URL}'
+            },
+            {
+                name: 'InstaDownloader',
+                baseUrl: 'https://instadownloader.net/',
+                pattern: '?url={URL}'
+            },
+            {
+                name: 'DownloadGram',
+                baseUrl: 'https://downloadgram.org/',
+                pattern: '?url={URL}'
+            }
+        ],
+        twitter: [
+            {
+                name: 'TwitterVideoDownloader',
+                baseUrl: 'https://twittervideodownloader.com/',
+                pattern: '?url={URL}'
+            },
+            {
+                name: 'GetFVid',
+                baseUrl: 'https://www.getfvid.com/',
+                pattern: '?url={URL}'
+            }
+        ],
+        facebook: [
+            {
+                name: 'SaveFrom.net',
+                baseUrl: 'https://savefrom.net/',
+                pattern: '#url={URL}'
+            },
+            {
+                name: 'FBDownloader',
+                baseUrl: 'https://fbdownloader.net/',
+                pattern: '?url={URL}'
+            }
+        ]
+    };
     
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve({
-                service: service.name,
-                url: service.url
-            });
-        }, 1000);
-    });
+    return allServices[platform] || allServices.youtube;
 }
 
 function showErrorWithAlternatives(errorMessage, url, platform) {
-    // Créer une notification d'erreur avec alternatives
-    const notification = document.createElement('div');
-    notification.className = 'notification error-notification';
-    notification.style.cssText = `
+    // Obtenir les services alternatifs
+    const alternatives = getAlternativeServices(platform);
+    
+    // Créer le modal d'erreur avec alternatives
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.cssText = `
         position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #ff6b6b;
-        color: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        z-index: 1001;
-        animation: slideIn 0.3s ease;
-        max-width: 350px;
-        word-wrap: break-word;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    `;
+    
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        text-align: center;
     `;
     
     // Adaptation mobile
     if (isMobile) {
-        notification.style.cssText += `
-            left: 20px;
-            right: 20px;
-            max-width: none;
-            top: 10px;
-            padding: 16px;
+        content.style.cssText += `
+            padding: 20px;
+            margin: 20px;
             font-size: 14px;
         `;
     }
     
-    const alternatives = [
-        { name: 'SaveFrom.net', url: `https://en.savefrom.net/${encodeURIComponent(url)}` },
-        { name: 'Y2Mate', url: `https://www.y2mate.com/youtube/${extractVideoId(url, platform)}` },
-        { name: 'Online Video Converter', url: `https://onlinevideoconverter.com/fr/youtube-converter?url=${encodeURIComponent(url)}` }
-    ];
-    
-    let alternativesHtml = '';
-    alternatives.forEach(alt => {
-        const buttonStyle = isMobile ?
-            `display: block; background: rgba(255,255,255,0.2); color: white; 
-             padding: 10px 12px; border-radius: 6px; text-decoration: none; 
-             margin-top: 8px; text-align: center; font-size: 13px;` :
-            `display: block; background: rgba(255,255,255,0.2); color: white; 
-             padding: 8px 12px; border-radius: 5px; text-decoration: none; 
-             margin-top: 8px; text-align: center;`;
+    content.innerHTML = `
+        <div style="color: #f44336; margin-bottom: 20px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 15px;"></i>
+            <h3 style="margin: 0 0 10px 0;">Erreur de téléchargement</h3>
+            <p style="margin: 0; color: #666;">${errorMessage}</p>
+        </div>
         
-        alternativesHtml += `
-            <a href="${alt.url}" target="_blank" 
-               style="${buttonStyle}">
-                <i class="fas fa-external-link-alt"></i> ${alt.name}
-            </a>
-        `;
-    });
-    
-    const closeButtonStyle = isMobile ?
-        `background: rgba(255,255,255,0.2); color: white; border: none; 
-         padding: 8px 12px; border-radius: 6px; cursor: pointer; 
-         margin-top: 12px; width: 100%; font-size: 14px;` :
-        `background: rgba(255,255,255,0.2); color: white; border: none; 
-         padding: 5px 10px; border-radius: 3px; cursor: pointer; 
-         margin-top: 10px; width: 100%;`;
-    
-    notification.innerHTML = `
-        <div style="margin-bottom: 10px;">
-            <i class="fas fa-exclamation-triangle"></i> ${errorMessage}
+        <div style="margin-bottom: 25px;">
+            <h4 style="color: #333; margin-bottom: 15px;">Essayez ces services alternatifs :</h4>
+            <div class="alternatives-list">
+                ${alternatives.map(service => `
+                    <button class="alternative-btn" data-url="${buildDownloadUrl(service, url, 'best')}" 
+                            style="display: block; width: 100%; padding: 12px; margin: 8px 0; 
+                                   background: #2196F3; color: white; border: none; border-radius: 8px; 
+                                   cursor: pointer; font-size: 14px; transition: background 0.3s;">
+                        <i class="fas fa-external-link-alt"></i> ${service.name}
+                    </button>
+                `).join('')}
+            </div>
         </div>
-        <div style="font-size: ${isMobile ? '0.85rem' : '0.9rem'}; margin-bottom: 10px;">
-            Essayez ces services alternatifs :
-        </div>
-        ${alternativesHtml}
-        <button onclick="this.parentElement.remove()" 
-                style="${closeButtonStyle}">
+        
+        <button class="close-btn" style="background: #ccc; color: #333; border: none; 
+                                         padding: 10px 20px; border-radius: 5px; cursor: pointer;">
             Fermer
         </button>
     `;
     
-    document.body.appendChild(notification);
+    // Ajouter les événements
+    content.querySelectorAll('.alternative-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const url = btn.getAttribute('data-url');
+            startDirectDownload(url, 'video');
+            document.body.removeChild(modal);
+        });
+        
+        // Effet hover
+        btn.addEventListener('mouseenter', () => {
+            btn.style.background = '#1976D2';
+        });
+        btn.addEventListener('mouseleave', () => {
+            btn.style.background = '#2196F3';
+        });
+    });
     
-    // Supprimer après 30 secondes
-    setTimeout(() => {
-        if (document.body.contains(notification)) {
-            notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
-            }, 300);
+    content.querySelector('.close-btn').addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+    
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    
+    // Fermer en cliquant en dehors
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
         }
-    }, 30000);
+    });
 }
 
 function extractVideoId(url, platform) {
@@ -872,6 +1018,74 @@ function extractVideoId(url, platform) {
         }
     } catch (error) {
         return 'unknown';
+    }
+}
+
+// Fonction pour mettre à jour le message du modal de chargement
+function updateLoadingMessage(message) {
+    const loadingText = document.querySelector('#loadingModal .loading-text');
+    if (loadingText) {
+        loadingText.textContent = message;
+    }
+}
+
+// Fonction pour afficher les informations de la vidéo
+function displayVideoInfo(videoInfo) {
+    const existingInfo = document.querySelector('.video-info-display');
+    if (existingInfo) {
+        existingInfo.remove();
+    }
+    
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'video-info-display';
+    infoDiv.style.cssText = `
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 10px 0;
+        max-width: 100%;
+    `;
+    
+    infoDiv.innerHTML = `
+        <h3 style="margin: 0 0 10px 0; color: #333; font-size: 16px;">
+            ${videoInfo.title || 'Titre non disponible'}
+        </h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; font-size: 14px; color: #666;">
+            <span><strong>Durée:</strong> ${formatDuration(videoInfo.duration)}</span>
+            <span><strong>Auteur:</strong> ${videoInfo.uploader || 'Inconnu'}</span>
+            ${videoInfo.view_count ? `<span><strong>Vues:</strong> ${formatNumber(videoInfo.view_count)}</span>` : ''}
+        </div>
+        ${videoInfo.thumbnail ? `<img src="${videoInfo.thumbnail}" alt="Miniature" style="width: 100%; max-width: 200px; border-radius: 5px; margin-top: 10px;">` : ''}
+    `;
+    
+    const downloadBtn = document.getElementById('downloadBtn');
+    downloadBtn.parentNode.insertBefore(infoDiv, downloadBtn);
+}
+
+// Fonction pour formater la durée
+function formatDuration(seconds) {
+    if (!seconds || seconds === 0) return 'Inconnue';
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+        return `${hours}h ${minutes}m ${remainingSeconds}s`;
+    } else {
+        return `${minutes}m ${remainingSeconds}s`;
+    }
+}
+
+// Fonction pour formater les nombres
+function formatNumber(num) {
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'K';
+    } else {
+        return num.toString();
     }
 }
 
