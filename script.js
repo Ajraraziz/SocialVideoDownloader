@@ -17,6 +17,8 @@ let isLandscape = window.innerWidth > window.innerHeight;
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
     setupMobileOptimizations();
+    setupThemeToggle();
+    setupAdvancedMobileFeatures();
 });
 
 function initializeApp() {
@@ -287,7 +289,13 @@ function updatePlaceholder(platform) {
         instagram: 'https://www.instagram.com/p/...',
         tiktok: 'https://www.tiktok.com/@user/video/...',
         facebook: 'https://www.facebook.com/watch?v=...',
-        twitter: 'https://twitter.com/user/status/...'
+        twitter: 'https://twitter.com/user/status/...',
+        vimeo: 'https://vimeo.com/123456789',
+        dailymotion: 'https://www.dailymotion.com/video/...',
+        twitch: 'https://www.twitch.tv/videos/...',
+        pinterest: 'https://www.pinterest.com/pin/...',
+        linkedin: 'https://www.linkedin.com/posts/...',
+        reddit: 'https://www.reddit.com/r/subreddit/comments/...'
     };
     
     videoUrlInput.placeholder = placeholders[platform] || 'Collez l\'URL de la vidéo...';
@@ -306,6 +314,18 @@ function detectPlatform() {
         selectPlatform('facebook');
     } else if (url.includes('twitter.com') || url.includes('x.com')) {
         selectPlatform('twitter');
+    } else if (url.includes('vimeo.com')) {
+        selectPlatform('vimeo');
+    } else if (url.includes('dailymotion.com')) {
+        selectPlatform('dailymotion');
+    } else if (url.includes('twitch.tv')) {
+        selectPlatform('twitch');
+    } else if (url.includes('pinterest.com')) {
+        selectPlatform('pinterest');
+    } else if (url.includes('linkedin.com')) {
+        selectPlatform('linkedin');
+    } else if (url.includes('reddit.com')) {
+        selectPlatform('reddit');
     }
 }
 
@@ -315,7 +335,13 @@ function validateUrl(url, platform) {
         instagram: /^(https?:\/\/)?(www\.)?instagram\.com\/p\/[a-zA-Z0-9_-]+/,
         tiktok: /^(https?:\/\/)?(www\.)?tiktok\.com\/@[a-zA-Z0-9._-]+\/video\/[0-9]+/,
         facebook: /^(https?:\/\/)?(www\.)?facebook\.com\/watch\?v=[0-9]+/,
-        twitter: /^(https?:\/\/)?(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9._-]+\/status\/[0-9]+/
+        twitter: /^(https?:\/\/)?(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9._-]+\/status\/[0-9]+/,
+        vimeo: /^(https?:\/\/)?(www\.)?vimeo\.com\/[0-9]+/,
+        dailymotion: /^(https?:\/\/)?(www\.)?dailymotion\.com\/video\/[a-zA-Z0-9]+/,
+        twitch: /^(https?:\/\/)?(www\.)?twitch\.tv\/(videos\/[0-9]+|[a-zA-Z0-9_-]+)/,
+        pinterest: /^(https?:\/\/)?(www\.)?pinterest\.com\/pin\/[0-9]+/,
+        linkedin: /^(https?:\/\/)?(www\.)?linkedin\.com\/posts\/[a-zA-Z0-9_-]+/,
+        reddit: /^(https?:\/\/)?(www\.)?reddit\.com\/r\/[a-zA-Z0-9_-]+\/comments\/[a-zA-Z0-9_-]+/
     };
     
     return patterns[platform] ? patterns[platform].test(url) : true;
@@ -891,6 +917,108 @@ function getAlternativeServices(platform) {
                 baseUrl: 'https://fbdownloader.net/',
                 pattern: '?url={URL}'
             }
+        ],
+        vimeo: [
+            {
+                name: 'SaveFrom.net',
+                baseUrl: 'https://savefrom.net/',
+                pattern: '#url={URL}'
+            },
+            {
+                name: 'VimeoDownloader',
+                baseUrl: 'https://vimeodownloader.com/',
+                pattern: '?url={URL}'
+            },
+            {
+                name: 'ClipConverter',
+                baseUrl: 'https://www.clipconverter.cc/',
+                pattern: '?url={URL}'
+            }
+        ],
+        dailymotion: [
+            {
+                name: 'SaveFrom.net',
+                baseUrl: 'https://savefrom.net/',
+                pattern: '#url={URL}'
+            },
+            {
+                name: 'DailymotionDownloader',
+                baseUrl: 'https://dailymotiondownloader.com/',
+                pattern: '?url={URL}'
+            },
+            {
+                name: 'ClipConverter',
+                baseUrl: 'https://www.clipconverter.cc/',
+                pattern: '?url={URL}'
+            }
+        ],
+        twitch: [
+            {
+                name: 'TwitchDownloader',
+                baseUrl: 'https://twitchdownloader.com/',
+                pattern: '?url={URL}'
+            },
+            {
+                name: 'SaveFrom.net',
+                baseUrl: 'https://savefrom.net/',
+                pattern: '#url={URL}'
+            },
+            {
+                name: 'StreamSaver',
+                baseUrl: 'https://streamsaver.io/',
+                pattern: '?url={URL}'
+            }
+        ],
+        pinterest: [
+            {
+                name: 'PinSave',
+                baseUrl: 'https://pinsave.app/',
+                pattern: '?url={URL}'
+            },
+            {
+                name: 'SaveFrom.net',
+                baseUrl: 'https://savefrom.net/',
+                pattern: '#url={URL}'
+            },
+            {
+                name: 'PinterestDownloader',
+                baseUrl: 'https://pinterestdownloader.com/',
+                pattern: '?url={URL}'
+            }
+        ],
+        linkedin: [
+            {
+                name: 'SaveFrom.net',
+                baseUrl: 'https://savefrom.net/',
+                pattern: '#url={URL}'
+            },
+            {
+                name: 'LinkedInDownloader',
+                baseUrl: 'https://linkedindownloader.com/',
+                pattern: '?url={URL}'
+            },
+            {
+                name: 'SocialDownloader',
+                baseUrl: 'https://socialdownloader.com/',
+                pattern: '?url={URL}'
+            }
+        ],
+        reddit: [
+            {
+                name: 'RedditSave',
+                baseUrl: 'https://redditsave.com/',
+                pattern: '?url={URL}'
+            },
+            {
+                name: 'SaveFrom.net',
+                baseUrl: 'https://savefrom.net/',
+                pattern: '#url={URL}'
+            },
+            {
+                name: 'RedditDownloader',
+                baseUrl: 'https://redditdownloader.com/',
+                pattern: '?url={URL}'
+            }
         ]
     };
     
@@ -1130,4 +1258,318 @@ clearHistoryBtn.style.cssText = `
 clearHistoryBtn.onclick = clearAllHistory;
 
 // Ajouter le bouton à l'historique
-document.querySelector('.download-history').appendChild(clearHistoryBtn); 
+document.querySelector('.download-history').appendChild(clearHistoryBtn);
+
+// 🎨 SYSTÈME DE THÈME AVANCÉ
+function setupThemeToggle() {
+    const themeToggle = document.getElementById('themeToggle');
+    if (!themeToggle) return;
+    
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    
+    // Appliquer le thème sauvegardé
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateThemeIcon(currentTheme);
+    
+    // Écouteur d'événement pour le basculement
+    themeToggle.addEventListener('click', function() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        // Animation de transition
+        document.documentElement.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+        
+        // Supprimer la transition après l'animation
+        setTimeout(() => {
+            document.documentElement.style.transition = '';
+        }, 300);
+    });
+    
+    // Détection du thème système
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('theme')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        updateThemeIcon('dark');
+    }
+    
+    // Écouter les changements de thème système
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        if (!localStorage.getItem('theme')) {
+            const newTheme = e.matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+    });
+}
+
+function updateThemeIcon(theme) {
+    const themeToggle = document.getElementById('themeToggle');
+    if (!themeToggle) return;
+    
+    const icon = themeToggle.querySelector('i');
+    
+    if (theme === 'dark') {
+        icon.className = 'fas fa-sun';
+        themeToggle.title = 'Basculer vers le thème clair';
+    } else {
+        icon.className = 'fas fa-moon';
+        themeToggle.title = 'Basculer vers le thème sombre';
+    }
+}
+
+// 📱 FONCTIONNALITÉS MOBILES AVANCÉES
+function setupAdvancedMobileFeatures() {
+    // Gestion améliorée du clavier virtuel
+    setupVirtualKeyboardHandling();
+    
+    // Gestes tactiles
+    setupTouchGestures();
+    
+    // Optimisations de performance
+    setupPerformanceOptimizations();
+    
+    // Détection de connexion
+    setupNetworkDetection();
+}
+
+function setupVirtualKeyboardHandling() {
+    if (!isMobile) return;
+    
+    const viewport = document.querySelector('meta[name="viewport"]');
+    const urlInput = document.getElementById('videoUrl');
+    
+    // Gérer l'ouverture/fermeture du clavier virtuel
+    let initialViewportHeight = window.innerHeight;
+    
+    window.addEventListener('resize', function() {
+        const currentHeight = window.innerHeight;
+        const heightDifference = initialViewportHeight - currentHeight;
+        
+        // Si la hauteur a diminué de plus de 150px, le clavier est probablement ouvert
+        if (heightDifference > 150) {
+            document.body.classList.add('keyboard-open');
+            // Faire défiler vers le champ de saisie
+            setTimeout(() => {
+                urlInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        } else {
+            document.body.classList.remove('keyboard-open');
+        }
+    });
+    
+    // Améliorer la saisie sur mobile
+    urlInput.addEventListener('focus', function() {
+        // Empêcher le zoom sur iOS
+        if (viewport) {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
+        }
+        
+        // Faire défiler vers le champ
+        setTimeout(() => {
+            this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+    });
+    
+    urlInput.addEventListener('blur', function() {
+        // Restaurer le zoom
+        if (viewport) {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+        }
+    });
+}
+
+function setupTouchGestures() {
+    if (!isMobile) return;
+    
+    let startX, startY, startTime;
+    
+    // Geste de balayage sur l'historique
+    const historyList = document.getElementById('historyList');
+    
+    historyList.addEventListener('touchstart', function(e) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        startTime = Date.now();
+    });
+    
+    historyList.addEventListener('touchend', function(e) {
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        const endTime = Date.now();
+        
+        const diffX = startX - endX;
+        const diffY = startY - endY;
+        const diffTime = endTime - startTime;
+        
+        // Détecter un balayage horizontal rapide
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 100 && diffTime < 500) {
+            const historyItem = e.target.closest('.history-item');
+            if (historyItem) {
+                if (diffX > 0) {
+                    // Balayage vers la gauche - supprimer
+                    const id = historyItem.dataset.id;
+                    if (id) {
+                        removeFromHistory(id);
+                        showEnhancedNotification('Élément supprimé de l\'historique', 'success');
+                    }
+                }
+            }
+        }
+    });
+}
+
+function setupPerformanceOptimizations() {
+    // Lazy loading des animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    });
+    
+    // Observer les éléments à animer
+    document.querySelectorAll('.download-card, .download-history, .platform-btn').forEach(el => {
+        observer.observe(el);
+    });
+    
+    // Précharger les ressources critiques
+    const preloader = document.createElement('link');
+    preloader.rel = 'preload';
+    preloader.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff2';
+    preloader.as = 'font';
+    preloader.type = 'font/woff2';
+    preloader.crossOrigin = 'anonymous';
+    document.head.appendChild(preloader);
+}
+
+function setupNetworkDetection() {
+    // Détecter la connexion réseau
+    function updateNetworkStatus() {
+        const isOnline = navigator.onLine;
+        
+        if (!isOnline) {
+            showEnhancedNotification('Connexion Internet perdue', 'warning');
+        }
+    }
+    
+    // Écouteurs d'événements réseau
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+    
+    // Détecter la vitesse de connexion
+    if ('connection' in navigator) {
+        const connection = navigator.connection;
+        
+        // Adapter l'interface selon la vitesse
+        if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
+            document.body.classList.add('slow-connection');
+            showEnhancedNotification('Connexion lente détectée - Mode optimisé activé', 'info');
+        }
+    }
+}
+
+// 🔔 SYSTÈME DE NOTIFICATIONS AMÉLIORÉ
+function showEnhancedNotification(message, type = 'info', duration = 3000) {
+    // Créer l'élément notification
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-${getNotificationIcon(type)}"></i>
+            <span>${message}</span>
+            <button class="notification-close">&times;</button>
+        </div>
+    `;
+    
+    // Ajouter au DOM
+    document.body.appendChild(notification);
+    
+    // Animation d'entrée
+    setTimeout(() => notification.classList.add('show'), 100);
+    
+    // Bouton de fermeture
+    notification.querySelector('.notification-close').addEventListener('click', () => {
+        hideNotification(notification);
+    });
+    
+    // Fermeture automatique
+    setTimeout(() => {
+        hideNotification(notification);
+    }, duration);
+    
+    // Notification système (si autorisée)
+    if (Notification.permission === 'granted' && type === 'success') {
+        new Notification('Téléchargeur de Vidéos', {
+            body: message,
+            icon: '/favicon.ico'
+        });
+    }
+}
+
+function getNotificationIcon(type) {
+    const icons = {
+        success: 'check-circle',
+        error: 'exclamation-circle',
+        warning: 'exclamation-triangle',
+        info: 'info-circle'
+    };
+    return icons[type] || 'info-circle';
+}
+
+function hideNotification(notification) {
+    notification.classList.remove('show');
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 300);
+}
+
+// 🚀 OPTIMISATIONS DE PERFORMANCE AVANCÉES
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Optimiser la détection de plateforme
+const debouncedDetectPlatform = debounce(detectPlatform, 300);
+
+// 🎯 AMÉLIORATION UX AVEC FEEDBACK VISUEL
+function addVisualFeedback() {
+    // Feedback de clic pour les boutons
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.platform-btn, .download-btn, .close-btn')) {
+            e.target.classList.add('clicked');
+            setTimeout(() => {
+                e.target.classList.remove('clicked');
+            }, 150);
+        }
+    });
+    
+    // Feedback de succès pour les champs de saisie
+    const urlInput = document.getElementById('videoUrl');
+    if (urlInput) {
+        urlInput.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.add('has-content');
+            } else {
+                this.classList.remove('has-content');
+            }
+        });
+    }
+}
+
+// Initialiser le feedback visuel
+document.addEventListener('DOMContentLoaded', addVisualFeedback); 
