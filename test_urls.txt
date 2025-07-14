@@ -1,0 +1,38 @@
+# URLs de test pour SaveFrom.net Clone
+# Utilisez ces URLs pour tester les différentes fonctionnalités
+
+# YouTube
+https://www.youtube.com/watch?v=dQw4w9WgXcQ
+https://youtu.be/dQw4w9WgXcQ
+https://www.youtube.com/shorts/abc123
+
+# Instagram (exemples - remplacez par des URLs réelles)
+https://www.instagram.com/p/ABC123/
+https://www.instagram.com/reel/ABC123/
+https://www.instagram.com/tv/ABC123/
+
+# TikTok (exemples - remplacez par des URLs réelles)
+https://www.tiktok.com/@user/video/1234567890
+
+# Facebook (exemples - remplacez par des URLs réelles)
+https://www.facebook.com/watch?v=1234567890
+https://www.facebook.com/user/videos/1234567890
+
+# Twitter/X (exemples - remplacez par des URLs réelles)
+https://twitter.com/user/status/1234567890
+https://x.com/user/status/1234567890
+
+# Vimeo (exemples - remplacez par des URLs réelles)
+https://vimeo.com/123456789
+
+# Dailymotion (exemples - remplacez par des URLs réelles)
+https://www.dailymotion.com/video/x123456
+
+# Twitch (exemples - remplacez par des URLs réelles)
+https://www.twitch.tv/user/clip/abc123
+
+# SoundCloud (exemples - remplacez par des URLs réelles)
+https://soundcloud.com/user/track-name
+
+# Note: Remplacez ces URLs d'exemple par de vraies URLs pour tester
+# Ces URLs sont uniquement des exemples de format

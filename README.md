@@ -1,146 +1,305 @@
-# Social Video Downloader
+# SaveFrom.net Clone 🎥
 
-Un outil web moderne pour télécharger des vidéos depuis les réseaux sociaux populaires.
+Un clone complet de SaveFrom.net avec interface moderne et API robuste pour télécharger des vidéos depuis plus de 1000 sites web.
 
-## 🌟 Fonctionnalités
+## ✨ Fonctionnalités
 
-- **Multi-plateformes** : YouTube, Instagram, TikTok, Facebook, Twitter
-- **Interface moderne** : Design responsive et intuitif
-- **Qualités multiples** : Choix de la qualité de téléchargement
-- **Historique** : Sauvegarde des téléchargements récents
-- **Alternatives automatiques** : Services de secours si le téléchargement principal échoue
-- **PWA (Progressive Web App)** : Installable sur mobile et fonctionne hors ligne
-- **Optimisation mobile** : Interface adaptée aux écrans tactiles
+- **🌐 Support multi-plateformes** : YouTube, Instagram, TikTok, Facebook, Twitter, Vimeo, Dailymotion, Twitch et plus de 1000 sites
+- **🎯 Interface moderne** : Design responsive et intuitive inspirée de SaveFrom.net
+- **⚡ API REST complète** : Endpoints pour l'intégration avec d'autres applications
+- **📱 Mobile-friendly** : Interface adaptée aux mobiles et tablettes
+- **🔄 Téléchargement en temps réel** : Suivi de progression en direct
+- **🎨 Formats multiples** : Vidéo et audio dans différentes qualités
+- **🔧 Cache intelligent** : Système de cache pour améliorer les performances
+- **📊 Métadonnées complètes** : Titre, thumbnail, durée, vues, etc.
 
-## 📱 Optimisations Mobile
+## � Installation rapide
 
-### 🎯 Interface Adaptative
-- **Design responsive** : S'adapte à tous les écrans (320px à 4K)
-- **Zones de toucher optimisées** : Boutons de 44px minimum pour faciliter l'utilisation
-- **Gestion du clavier virtuel** : Évite le zoom automatique sur iOS
-- **Orientation dynamique** : S'adapte au mode portrait et paysage
+### Option 1: Docker (Recommandé)
 
-### ⚡ Performance Mobile
-- **Animations optimisées** : Transitions fluides même sur les appareils moins puissants
-- **Chargement rapide** : Service worker pour la mise en cache
-- **Écrans haute densité** : Icônes et images optimisées pour les écrans Retina
-
-### 🔧 Fonctionnalités PWA
-- **Installation native** : Ajout à l'écran d'accueil sur mobile
-- **Mode hors ligne** : Fonctionne même sans connexion internet
-- **Mises à jour automatiques** : Notifications de nouvelles versions
-- **Icônes adaptatives** : Icônes masquables pour tous les appareils
-
-### 📐 Breakpoints Responsive
-- **Desktop** : > 768px - Layout en grille avec sidebar
-- **Tablet** : 768px - Layout adaptatif avec boutons en grille
-- **Mobile** : 480px - Layout vertical optimisé
-- **Small Mobile** : 360px - Interface ultra-compacte
-
-## 🚀 Déploiement sur GitHub Pages
-
-### Méthode 1 : Déploiement automatique
-1. Forkez ce repository
-2. Allez dans Settings > Pages
-3. Sélectionnez "Deploy from a branch"
-4. Choisissez la branche `main` et le dossier `/ (root)`
-5. Cliquez sur "Save"
-
-### Méthode 2 : Déploiement manuel
 ```bash
-# Clonez le repository
-git clone https://github.com/votre-username/social-video-downloader.git
+# Cloner le projet
+git clone https://github.com/votre-username/savefrom-clone.git
+cd savefrom-clone
 
-# Ajoutez vos fichiers
-git add .
-git commit -m "Initial commit"
-git push origin main
+# Lancer avec Docker Compose
+docker-compose up -d
+
+# Accéder à l'application
+open http://localhost:8000
 ```
 
-## ⚠️ Limitations sur GitHub Pages
-
-**Important** : GitHub Pages ne peut pas exécuter de serveur backend. Cette application utilise donc :
-
-1. **APIs externes** pour le téléchargement direct
-2. **Services alternatifs** en cas d'échec
-3. **Redirection vers des sites tiers** pour certains téléchargements
-
-### Pourquoi les vidéos ne se téléchargent pas directement ?
-
-- **CORS** : Les navigateurs bloquent les téléchargements directs depuis les réseaux sociaux
-- **Politiques de sécurité** : Les sites sociaux empêchent le scraping
-- **GitHub Pages statique** : Pas de serveur pour traiter les requêtes
-
-### Solutions incluses :
-
-✅ **Téléchargement direct** via APIs externes  
-✅ **Services alternatifs** (SaveFrom.net, Y2Mate, etc.)  
-✅ **Redirection automatique** vers des sites de téléchargement  
-✅ **Notifications d'erreur** avec alternatives  
-
-## 📱 Utilisation
-
-1. **Collez l'URL** de la vidéo que vous voulez télécharger
-2. **Sélectionnez la plateforme** (détection automatique)
-3. **Choisissez la qualité** souhaitée
-4. **Cliquez sur "Télécharger"**
-5. **Suivez les instructions** si des alternatives s'ouvrent
-
-## 🛠️ Développement local
-
-Pour tester avec un serveur backend :
+### Option 2: Installation manuelle
 
 ```bash
+# Cloner le projet
+git clone https://github.com/votre-username/savefrom-clone.git
+cd savefrom-clone
+
+# Créer un environnement virtuel
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# ou
+venv\Scripts\activate     # Windows
+
 # Installer les dépendances
-npm install
+pip install -r requirements.txt
 
-# Démarrer le serveur
-npm start
+# Installer FFmpeg (requis pour la conversion audio)
+# Ubuntu/Debian:
+sudo apt-get install ffmpeg
 
-# Ou utiliser les scripts batch (Windows)
-start.bat
+# macOS:
+brew install ffmpeg
+
+# Windows: télécharger depuis https://ffmpeg.org/
+
+# Lancer l'application
+python app.py
 ```
 
-## 📋 Plateformes supportées
+## � Utilisation
 
-| Plateforme | Statut | Notes |
-|------------|--------|-------|
-| YouTube | ✅ | Téléchargement direct + alternatives |
-| Instagram | ✅ | Via services tiers |
-| TikTok | ✅ | Via services tiers |
-| Facebook | ✅ | Via services tiers |
-| Twitter | ✅ | Via services tiers |
+### Interface Web
 
-## 🔧 Configuration
+1. **Accéder à l'application** : http://localhost:8000
+2. **Coller une URL** : Collez l'URL de la vidéo dans le champ de saisie
+3. **Sélectionner la plateforme** : Choisissez la plateforme ou laissez en mode "Auto"
+4. **Analyser** : Cliquez sur "Analyser" pour extraire les informations
+5. **Choisir le format** : Sélectionnez vidéo ou audio seul
+6. **Télécharger** : Cliquez sur le bouton de téléchargement du format souhaité
 
-### Variables d'environnement (optionnel)
-```env
-PORT=3000
-NODE_ENV=production
+### API REST
+
+#### Obtenir les informations d'une vidéo
+
+```bash
+curl -X GET "http://localhost:8000/api/info?url=https://youtube.com/watch?v=dQw4w9WgXcQ"
+```
+
+#### Démarrer un téléchargement
+
+```bash
+curl -X POST "http://localhost:8000/api/download" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://youtube.com/watch?v=dQw4w9WgXcQ",
+    "quality": "best"
+  }'
+```
+
+#### Vérifier le statut d'un téléchargement
+
+```bash
+curl -X GET "http://localhost:8000/api/download/{download_id}/status"
+```
+
+#### Télécharger le fichier
+
+```bash
+curl -X GET "http://localhost:8000/api/download/{download_id}/file" -o video.mp4
+```
+
+## 🛠️ Configuration
+
+### Variables d'environnement
+
+```bash
+# Port du serveur (défaut: 8000)
+PORT=8000
+
+# Répertoire des téléchargements
+DOWNLOAD_DIR=/app/downloads
+
+# Répertoire du cache
+CACHE_DIR=/app/cache
+
+# Durée du cache en secondes (défaut: 3600)
+CACHE_DURATION=3600
+
+# Niveau de log (défaut: INFO)
+LOG_LEVEL=INFO
 ```
 
 ### Personnalisation
-- Modifiez `styles.css` pour changer l'apparence
-- Ajustez `script.js` pour ajouter de nouvelles plateformes
-- Configurez les APIs dans `downloadWithBackend()`
 
-## 📄 Licence
+1. **Modifier les couleurs** : Editez `/static/css/style.css`
+2. **Ajouter des sites** : Modifiez la fonction `get_supported_sites()` dans `app.py`
+3. **Personnaliser l'interface** : Editez `/static/index.html`
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+## 🔧 Architecture technique
+
+### Backend (Python/FastAPI)
+
+- **FastAPI** : Framework web moderne et performant
+- **yt-dlp** : Moteur de téléchargement supporting 1000+ sites
+- **Pydantic** : Validation des données et sérialisation
+- **uvicorn** : Serveur ASGI haute performance
+
+### Frontend (HTML/CSS/JavaScript)
+
+- **HTML5** : Structure sémantique moderne
+- **CSS3** : Design responsive avec variables CSS
+- **JavaScript ES6+** : Interactions dynamiques et API calls
+- **Font Awesome** : Icônes vectorielles
+- **Google Fonts** : Typographie moderne
+
+### Fonctionnalités avancées
+
+- **Cache intelligent** : Mise en cache des métadonnées
+- **Téléchargement asynchrone** : Traitement en arrière-plan
+- **Polling temps réel** : Suivi de progression
+- **Gestion d'erreurs** : Retry automatique et fallback
+- **Nettoyage automatique** : Suppression des fichiers temporaires
+
+## 🌍 Sites supportés
+
+Le projet supporte plus de 1000 sites grâce à yt-dlp, incluant :
+
+### Plateformes vidéo populaires
+- **YouTube** : Vidéos, Shorts, livestreams
+- **Instagram** : Posts, Reels, IGTV, Stories
+- **TikTok** : Vidéos courtes et lives
+- **Facebook** : Vidéos publiques et Watch
+- **Twitter/X** : Vidéos et GIFs
+- **Vimeo** : Vidéos professionnelles
+- **Dailymotion** : Plateforme française
+- **Twitch** : Clips et VODs
+
+### Autres sites
+- Reddit, SoundCloud, Bandcamp
+- BBC iPlayer, Arte, France TV
+- Streamable, Imgur, Giphy
+- Et bien d'autres...
+
+## 📚 Documentation API
+
+### Endpoints principaux
+
+| Endpoint | Méthode | Description |
+|----------|---------|-------------|
+| `/` | GET | Page d'accueil |
+| `/health` | GET | Vérification de santé |
+| `/api/info` | GET | Informations vidéo |
+| `/api/download` | POST | Démarrer téléchargement |
+| `/api/download/{id}/status` | GET | Statut du téléchargement |
+| `/api/download/{id}/file` | GET | Télécharger le fichier |
+| `/api/supported-sites` | GET | Sites supportés |
+| `/docs` | GET | Documentation Swagger |
+
+### Modèles de données
+
+```python
+class VideoInfo(BaseModel):
+    id: str
+    title: str
+    thumbnail: str
+    duration: Optional[int]
+    uploader: Optional[str]
+    view_count: Optional[int]
+    upload_date: Optional[str]
+    formats: List[Dict]
+    platform: str
+    webpage_url: str
+
+class DownloadRequest(BaseModel):
+    url: HttpUrl
+    format_id: Optional[str] = "best"
+    quality: Optional[str] = "best"
+```
+
+## � Déploiement
+
+### Docker Compose (Production)
+
+```yaml
+version: '3.8'
+
+services:
+  savefrom-clone:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./downloads:/app/downloads
+      - ./cache:/app/cache
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+```
+
+### Nginx (Proxy inverse)
+
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+    
+    location / {
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+    client_max_body_size 100M;
+    proxy_connect_timeout 60s;
+    proxy_send_timeout 60s;
+    proxy_read_timeout 60s;
+}
+```
+
+## � Sécurité
+
+- **Validation des URLs** : Vérification stricte des entrées
+- **Limitation des requêtes** : Protection contre les abus
+- **Nettoyage automatique** : Suppression des fichiers temporaires
+- **Headers sécurisés** : Protection contre les attaques communes
+- **Pas de stockage permanent** : Fichiers supprimés après téléchargement
 
 ## 🤝 Contribution
 
-Les contributions sont les bienvenues ! N'hésitez pas à :
-- Signaler des bugs
-- Proposer des améliorations
-- Ajouter de nouvelles plateformes
-- Améliorer la documentation
+1. Fork le projet
+2. Créer une branche (`git checkout -b feature/amazing-feature`)
+3. Commit les changements (`git commit -m 'Add amazing feature'`)
+4. Push la branche (`git push origin feature/amazing-feature`)
+5. Ouvrir une Pull Request
+
+## 📝 Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ## ⚖️ Avertissement légal
 
-Cet outil est destiné à un usage personnel et éducatif uniquement. Assurez-vous de respecter :
-- Les conditions d'utilisation des plateformes
-- Les droits d'auteur
-- Les lois locales sur le téléchargement de contenu
+Ce projet est à des fins éducatives et personnelles uniquement. Assurez-vous de respecter les conditions d'utilisation des sites web et les lois sur le droit d'auteur de votre pays.
 
-L'utilisateur est responsable de l'utilisation qu'il fait de cet outil. 
+## 🆘 Support
+
+- **Issues** : [GitHub Issues](https://github.com/votre-username/savefrom-clone/issues)
+- **Discussions** : [GitHub Discussions](https://github.com/votre-username/savefrom-clone/discussions)
+- **Email** : support@votre-domaine.com
+
+## 🚧 Roadmap
+
+- [ ] Authentification utilisateur
+- [ ] Historique des téléchargements
+- [ ] Téléchargement par lots
+- [ ] Support des playlists
+- [ ] API GraphQL
+- [ ] Application mobile
+- [ ] Intégration cloud storage
+- [ ] Transcription automatique
+
+## 📊 Statistiques
+
+- **Sites supportés** : 1000+
+- **Formats vidéo** : MP4, WebM, FLV, MKV
+- **Formats audio** : MP3, AAC, OGG, FLAC
+- **Qualités** : 144p à 8K
+- **Taille max** : Illimitée
+
+---
+
+**Fait avec ❤️ par [Votre nom]** 

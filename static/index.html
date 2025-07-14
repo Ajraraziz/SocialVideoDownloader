@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaveFrom Clone - Téléchargeur de Vidéos</title>
+    <meta name="description" content="Téléchargez des vidéos depuis YouTube, Instagram, TikTok, Facebook et plus de 1000 sites gratuitement">
+    <meta name="keywords" content="télécharger vidéo, youtube downloader, instagram downloader, tiktok downloader">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS personnalisé -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-download"></i>
+                    <span>SaveFrom Clone</span>
+                </div>
+                <nav class="nav">
+                    <a href="#home" class="nav-link active">Accueil</a>
+                    <a href="#sites" class="nav-link">Sites supportés</a>
+                    <a href="#api" class="nav-link">API</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Section principale -->
+    <main class="main">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero" id="home">
+                <h1 class="hero-title">
+                    Téléchargez vos vidéos préférées
+                    <span class="gradient-text">gratuitement</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Supportant plus de 1000 sites incluant YouTube, Instagram, TikTok, Facebook et bien d'autres
+                </p>
+                
+                <!-- Formulaire de téléchargement -->
+                <div class="download-form">
+                    <div class="url-input-container">
+                        <input 
+                            type="url" 
+                            id="videoUrl" 
+                            placeholder="Collez l'URL de la vidéo ici..."
+                            class="url-input"
+                            autocomplete="off"
+                            spellcheck="false"
+                        >
+                        <button id="analyzeBtn" class="analyze-btn">
+                            <i class="fas fa-search"></i>
+                            Analyser
+                        </button>
+                    </div>
+                    
+                    <!-- Sélection de plateforme -->
+                    <div class="platform-selector">
+                        <button class="platform-btn active" data-platform="auto">
+                            <i class="fas fa-magic"></i>
+                            Auto
+                        </button>
+                        <button class="platform-btn" data-platform="youtube">
+                            <i class="fab fa-youtube"></i>
+                            YouTube
+                        </button>
+                        <button class="platform-btn" data-platform="instagram">
+                            <i class="fab fa-instagram"></i>
+                            Instagram
+                        </button>
+                        <button class="platform-btn" data-platform="tiktok">
+                            <i class="fab fa-tiktok"></i>
+                            TikTok
+                        </button>
+                        <button class="platform-btn" data-platform="facebook">
+                            <i class="fab fa-facebook"></i>
+                            Facebook
+                        </button>
+                        <button class="platform-btn" data-platform="twitter">
+                            <i class="fab fa-twitter"></i>
+                            Twitter
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Résultats de l'analyse -->
+            <section class="results" id="results" style="display: none;">
+                <div class="video-info">
+                    <div class="video-thumbnail">
+                        <img id="videoThumbnail" src="" alt="Thumbnail">
+                        <div class="video-duration" id="videoDuration"></div>
+                    </div>
+                    <div class="video-details">
+                        <h3 id="videoTitle"></h3>
+                        <p id="videoUploader"></p>
+                        <div class="video-stats">
+                            <span id="videoViews"></span>
+                            <span id="videoDate"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Options de téléchargement -->
+                <div class="download-options">
+                    <h4>Choisissez le format de téléchargement :</h4>
+                    <div class="format-tabs">
+                        <button class="format-tab active" data-type="video">
+                            <i class="fas fa-video"></i>
+                            Vidéo
+                        </button>
+                        <button class="format-tab" data-type="audio">
+                            <i class="fas fa-music"></i>
+                            Audio seul
+                        </button>
+                    </div>
+                    
+                    <div class="format-list" id="formatList">
+                        <!-- Les formats seront ajoutés dynamiquement -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Progression du téléchargement -->
+            <section class="progress-section" id="progressSection" style="display: none;">
+                <div class="progress-card">
+                    <div class="progress-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h4 id="progressTitle">Téléchargement en cours...</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p id="progressText">0%</p>
+                    <button id="cancelBtn" class="cancel-btn">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </button>
+                </div>
+            </section>
+
+            <!-- Sites supportés -->
+            <section class="supported-sites" id="sites">
+                <h2>Sites supportés</h2>
+                <div class="sites-grid" id="sitesGrid">
+                    <!-- Les sites seront chargés dynamiquement -->
+                </div>
+                <p class="sites-note">
+                    <i class="fas fa-info-circle"></i>
+                    Plus de 1000 sites supportés grâce à yt-dlp
+                </p>
+            </section>
+
+            <!-- API Documentation -->
+            <section class="api-docs" id="api">
+                <h2>API Documentation</h2>
+                <div class="api-grid">
+                    <div class="api-card">
+                        <h3>GET /api/info</h3>
+                        <p>Obtient les informations d'une vidéo</p>
+                        <code>curl -X GET "/api/info?url=https://youtube.com/watch?v=..."</code>
+                    </div>
+                    <div class="api-card">
+                        <h3>POST /api/download</h3>
+                        <p>Démarre le téléchargement d'une vidéo</p>
+                        <code>curl -X POST "/api/download" -d '{"url": "...", "quality": "best"}'</code>
+                    </div>
+                    <div class="api-card">
+                        <h3>GET /api/supported-sites</h3>
+                        <p>Liste des sites supportés</p>
+                        <code>curl -X GET "/api/supported-sites"</code>
+                    </div>
+                </div>
+                <div class="api-footer">
+                    <a href="/docs" class="api-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        Documentation complète
+                    </a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>SaveFrom Clone</h4>
+                    <p>Téléchargeur de vidéos gratuit et open source</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Légal</h4>
+                    <a href="#" class="footer-link">Conditions d'utilisation</a>
+                    <a href="#" class="footer-link">Politique de confidentialité</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <a href="#" class="footer-link">FAQ</a>
+                    <a href="#" class="footer-link">Contact</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 SaveFrom Clone. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <div class="modal" id="errorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Erreur</h3>
+                <button class="modal-close" onclick="closeModal('errorModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Succès</h3>
+                <button class="modal-close" onclick="closeModal('successModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage"></p>
+                <a id="downloadLink" href="" download="" class="download-link">
+                    <i class="fas fa-download"></i>
+                    Télécharger le fichier
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Chargement...</p>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
